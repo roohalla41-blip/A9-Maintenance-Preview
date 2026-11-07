@@ -11,6 +11,9 @@ public class PrototypeBootstrap : MonoBehaviour
         if (FindObjectOfType<EnvironmentBuilder>() == null)
             gameObject.AddComponent<EnvironmentBuilder>().Build(worldSize, groundMaterial, waterMaterial);
 
+        if (GetComponent<VillageSimulation>() == null)
+            gameObject.AddComponent<VillageSimulation>();
+
         GameObject cameraObject = Camera.main != null ? Camera.main.gameObject : new GameObject("Main Camera");
         cameraObject.tag = "MainCamera";
         Camera cam = cameraObject.GetComponent<Camera>();
