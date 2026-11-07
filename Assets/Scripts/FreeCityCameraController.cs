@@ -16,6 +16,8 @@ public class FreeCityCameraController : MonoBehaviour
     private float distance = 23f;
     private float yaw;
     private float pitch = 48f;
+    private Vector2 previousTouch;
+    private float previousPinchDistance;
 
     public void SetInitialView(Vector3 lookAt, float startDistance, float startPitch, float startYaw)
     {
@@ -40,13 +42,39 @@ public class FreeCityCameraController : MonoBehaviour
     private void LateUpdate()
     {
         MoveTarget();
-        if (Input.GetMouseButton(1))
+        if (Input.touchCount == 1)
         {
-            yaw += Input.GetAxis("Mouse X") * rotateSpeed * 35f;
-            pitch -= Input.GetAxis("Mouse Y") * rotateSpeed * 25f;
-            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began) previousTouch = touch.position;
+            else if (touch.phase == TouchPhase.Moved)
+            {
+                Vector2 delta = touch.position - previousTouch;
+                yaw += delta.x * .12f;
+                pitch = Mathf.Clamp(pitch - delta.y * .08f, minPitch, maxPitch);
+                previousTouch = touch.position;
+            }
+            previousPinchDistance = 0f;
         }
-        distance = Mathf.Clamp(distance - Input.mouseScrollDelta.y * zoomSpeed, minDistance, maxDistance);
+        else if (Input.touchCount >= 2)
+        {
+            Touch first = Input.GetTouch(0);
+            Touch second = Input.GetTouch(1);
+            float currentDistance = Vector2.Distance(first.position, second.position);
+            if (previousPinchDistance > 0f)
+                distance = Mathf.Clamp(distance - (currentDistance - previousPinchDistance) * .025f, minDistance, maxDistance);
+            previousPinchDistance = currentDistance;
+        }
+        else
+        {
+            previousPinchDistance = 0f;
+            if (Input.GetMouseButton(1))
+            {
+                yaw += Input.GetAxis("Mouse X") * rotateSpeed * 35f;
+                pitch -= Input.GetAxis("Mouse Y") * rotateSpeed * 25f;
+                pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+            }
+            distance = Mathf.Clamp(distance - Input.mouseScrollDelta.y * zoomSpeed, minDistance, maxDistance);
+        }
         UpdateCameraPose();
     }
 
