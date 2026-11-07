@@ -54,6 +54,11 @@ public class VillageSimulation : MonoBehaviour
                 ? new Color(.35f, .38f, .48f) : new Color(.72f, .55f, .36f);
             VillageWalker walker = person.AddComponent<VillageWalker>();
             walker.walkSpeed = soldier ? 1.5f : 1.1f;
+            if (soldier)
+            {
+                walker.enabled = false;
+                person.AddComponent<VillageGuard>();
+            }
         }
     }
 
