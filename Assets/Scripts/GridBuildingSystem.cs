@@ -38,10 +38,16 @@ public class GridBuildingSystem : MonoBehaviour
         Collider[] hits = Physics.OverlapBox(point+Vector3.up*.55f,half);
         foreach (Collider hit in hits)
         {
-            // Ignore the broad terrain slab, but block placement on small props/buildings.
             if (hit.bounds.size.x > 30f || hit.bounds.size.z > 30f) continue;
             return;
         }
+
+        VillageSimulation economy = VillageSimulation.Instance;
+        if (economy == null) return;
+        int woodCost = selectedBuilding == 1 ? 30 : selectedBuilding == 2 ? 40 : 50;
+        int stoneCost = selectedBuilding == 1 ? 0 : selectedBuilding == 2 ? 15 : 30;
+        int foodCost = selectedBuilding == 3 ? 20 : 10;
+        if (!economy.TrySpend(woodCost, stoneCost, foodCost)) return;
 
         Color color = selectedBuilding == 1 ? new Color(.68f,.48f,.31f) :
                       selectedBuilding == 2 ? new Color(.52f,.39f,.25f) : new Color(.46f,.34f,.28f);
@@ -55,6 +61,13 @@ public class GridBuildingSystem : MonoBehaviour
     private void OnGUI()
     {
         GUI.Box(new Rect(12,12,355,112),
-            "افغانستان قدیم | نمونه 0.1\nWASD: حرکت | راست‌کلیک و کشیدن: چرخش\nچرخ ماوس: زوم | B: ساخت | 1 خانه، 2 انبار، 3 سربازخانه\nحالت ساخت: "+(buildMode?"روشن":"خاموش"));
+            "افغانستان قدیم | نمونه 0.2\nWASD: حرکت | راست‌کلیک و کشیدن: چرخش\nچرخ ماوس: زوم | B: ساخت | 1 خانه، 2 انبار، 3 سربازخانه\nحالت ساخت: "+(buildMode?"روشن":"خاموش"));
+        if (buildMode)
+        {
+            string cost = selectedBuilding == 1 ? "خانه: ۳۰ چوب، ۱۰ غذا" :
+                          selectedBuilding == 2 ? "انبار: ۴۰ چوب، ۱۵ سنگ، ۱۰ غذا" :
+                          "سربازخانه: ۵۰ چوب، ۳۰ سنگ، ۲۰ غذا";
+            GUI.Box(new Rect(12, 370, 300, 34), cost);
+        }
     }
 }
