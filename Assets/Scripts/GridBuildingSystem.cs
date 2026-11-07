@@ -38,7 +38,7 @@ public class GridBuildingSystem : MonoBehaviour
         Collider[] hits = Physics.OverlapBox(point+Vector3.up*.55f,half);
         foreach (Collider hit in hits)
         {
-            if (hit.transform.IsChildOf(transform)) continue;
+            // Ignore the broad terrain slab, but block placement on small props/buildings.
             if (hit.bounds.size.x > 30f || hit.bounds.size.z > 30f) continue;
             return;
         }
