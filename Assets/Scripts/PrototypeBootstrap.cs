@@ -28,6 +28,9 @@ public class PrototypeBootstrap : MonoBehaviour
         if (controller == null) controller = cameraObject.AddComponent<FreeCityCameraController>();
         controller.SetInitialView(Vector3.zero, 23f, 48f, 0f);
 
+        if (GetComponent<EnemyRaidSystem>() == null)
+            gameObject.AddComponent<EnemyRaidSystem>();
+
         if (GetComponent<GridBuildingSystem>() == null)
         {
             GridBuildingSystem builder = gameObject.AddComponent<GridBuildingSystem>();
