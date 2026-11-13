@@ -27,14 +27,11 @@ public class GridBuildingSystem : MonoBehaviour
         if (!buildMode) return;
 
         // Touch input is handled separately so a tap is never placed twice.
-        if (Input.touchCount > 0)
+        if (Input.touchCount == 1)
         {
-            for (int i = 0; i < Input.touchCount; i++)
-            {
-                Touch touch = Input.GetTouch(i);
-                if (touch.phase == TouchPhase.Ended && !IsBuildUiPosition(touch.position))
-                    PlaceBuilding(touch.position);
-            }
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Ended && !IsBuildUiPosition(touch.position))
+                PlaceBuilding(touch.position);
         }
         else if (Input.GetMouseButtonDown(0) && !IsBuildUiPosition(Input.mousePosition))
         {
