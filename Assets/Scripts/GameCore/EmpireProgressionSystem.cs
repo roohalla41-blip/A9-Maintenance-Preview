@@ -129,8 +129,9 @@ public sealed class EmpireProgressionSystem : MonoBehaviour
     public void AwardExperience(int amount)
     {
         if (amount <= 0 || State == null) return;
-        State.experience += amount;
-        State.totalExperience += amount;
+        // Keep long-running offline progression inside safe serialized integer bounds.
+        State.experience = (int)Math.Min(int.MaxValue, (long)State.experience + amount);
+        State.totalExperience = (int)Math.Min(int.MaxValue, (long)State.totalExperience + amount);
         Save();
         RaiseChanged();
     }
