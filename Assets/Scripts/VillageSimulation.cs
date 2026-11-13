@@ -209,7 +209,7 @@ public class VillageSimulation : MonoBehaviour
                 Debug.Log("منابع بازی ذخیره شد.");
             SaveRoster();
         }
-        if (GUI.Button(new Rect(158, 346, 132, 32), "بارگذاری بازی"))
+        if (GUI.Button(new Rect(158, 346, 132, 32), "بارگذاری منابع"))
         {
             if (!GameSaveSystem.Load(Inventory))
                 Debug.LogWarning("ذخیره معتبری برای بارگذاری پیدا نشد.");
