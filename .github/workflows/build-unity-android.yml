@@ -36,9 +36,6 @@ jobs:
           unityVersion: 2022.3.62f1
           targetPlatform: Android
           buildMethod: AncientAfghanistanBuild.BuildAndroid
-          buildName: AncientAfghanistan
-          buildPath: Builds/Android
-          androidAppBundle: false
           allowDirtyBuild: true
 
       - name: Verify APK and create build manifest
