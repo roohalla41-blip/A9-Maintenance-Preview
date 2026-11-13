@@ -124,7 +124,7 @@ public static class BuildingWorldSaveSystem
         try
         {
             PlacedBuildingSave data = JsonUtility.FromJson<PlacedBuildingSave>(File.ReadAllText(path));
-            if (data == null || data.version != CurrentVersion || data.buildings == null ||
+            if (data == null || (data.version != 1 && data.version != CurrentVersion) || data.buildings == null ||
                 data.buildings.Count > MaximumSavedBuildings)
                 return null;
 
@@ -137,6 +137,7 @@ public static class BuildingWorldSaveSystem
                     !IsFinite(record.rotation.z) || !IsFinite(record.rotation.w))
                     return null;
             }
+            data.version = CurrentVersion; // Migrate the previous save format in memory.
             return data;
         }
         catch
