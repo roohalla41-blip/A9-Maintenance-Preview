@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 27
+  productGUID: a9010000000000000000000000000020
+  companyName: Afghanistan Old Studio
+  productName: Afghanistan Old
+  defaultScreenWidth: 1280
+  defaultScreenHeight: 720
+  defaultIsNativeResolution: 1
+  runInBackground: 1
+  resizableWindow: 1
+  fullscreenMode: 1
+  bundleVersion: 0.1.0
+  applicationIdentifier:
+    Android: com.afghanistanold.strategy
+    iPhone: com.afghanistanold.strategy
+  AndroidBundleVersionCode: 1
+  iPhoneBuildNumber: 1
+  activeInputHandler: 0
