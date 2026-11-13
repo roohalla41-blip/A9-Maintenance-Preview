@@ -141,10 +141,13 @@ public class GridBuildingSystem : MonoBehaviour
         if (progression != null && village != null && village.Inventory != null)
         {
             int requiredXp = progression.ExperienceToNextLevel;
+            string capitalRequirement = progression.GetCapitalBuildingRequirement();
             string capitalLabel = progression.CapitalLevel >= EmpireProgressionSystem.MaximumCapitalLevel
                 ? "پایتخت: حداکثر سطح"
-                : "ارتقای پایتخت " + progression.CapitalLevel + " | XP " +
-                  progression.Experience + "/" + requiredXp;
+                : !string.IsNullOrEmpty(capitalRequirement)
+                    ? "قفل ارتقای تالار | " + capitalRequirement
+                    : "ارتقای تالار " + progression.CapitalLevel + " | XP " +
+                      progression.Experience + "/" + requiredXp;
             GUI.enabled = progression.CanUpgradeCapital(village.Inventory);
             if (GUI.Button(new Rect(142, 148, 248, 32), capitalLabel))
             {
