@@ -2,6 +2,15 @@ name: Build Unity Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feature/gameplay-foundation
+    paths:
+      - '.github/workflows/build-unity-android.yml'
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - '*.cs'
 
 permissions:
   contents: read
@@ -17,6 +26,8 @@ jobs:
     steps:
       - name: Checkout game project
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Check Unity license configuration
         env:
@@ -48,6 +59,8 @@ jobs:
           unityVersion: 2022.3.62f1
           targetPlatform: Android
           buildMethod: AncientAfghanistanBuild.BuildAndroid
+          buildName: AncientAfghanistan
+          buildsPath: Builds
           allowDirtyBuild: true
 
       - name: Verify APK and create build manifest
