@@ -184,6 +184,7 @@ public class VillageSimulation : MonoBehaviour
 
     private void OnGUI()
     {
+        Matrix4x4 previousMatrix = MobileUiLayout.Begin();
         if (Inventory == null) return;
 
         GUI.Box(new Rect(12, 132, 300, 112),
@@ -212,6 +213,8 @@ public class VillageSimulation : MonoBehaviour
             if (!GameSaveSystem.Load(Inventory))
                 Debug.LogWarning("ذخیره معتبری برای بارگذاری پیدا نشد.");
         }
+    
+        MobileUiLayout.End(previousMatrix);
     }
 
     private void OnDestroy()
