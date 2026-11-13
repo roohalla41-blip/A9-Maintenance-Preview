@@ -143,7 +143,7 @@ public class VillageGuard : MonoBehaviour
         float best = float.MaxValue;
         for (int i = 0; i < Raider.Active.Count; i++)
         {
-            Raider enemy = Raider.Active[i];
+            Raider enemy = Raider.GetActive(i);
             if (enemy == null) continue;
             float distance = (enemy.transform.position - transform.position).sqrMagnitude;
             if (distance < best) { best = distance; nearest = enemy; }
@@ -172,8 +172,11 @@ public class VillageGuard : MonoBehaviour
 public class Raider : MonoBehaviour
 {
     private static readonly List<Raider> active = new List<Raider>();
-    public static IList<Raider> Active { get { return active.AsReadOnly(); } }
     public static int ActiveCount { get { return active.Count; } }
+    public static Raider GetActive(int index)
+    {
+        return index >= 0 && index < active.Count ? active[index] : null;
+    }
 
     public Vector3 target;
     public float health = 35f;
