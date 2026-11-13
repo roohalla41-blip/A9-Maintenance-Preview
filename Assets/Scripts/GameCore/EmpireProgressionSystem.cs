@@ -154,9 +154,51 @@ public sealed class EmpireProgressionSystem : MonoBehaviour
         }
     }
 
+    public int TechnologyCount { get { return Technologies.Length; } }
+
+    public string GetTechnologyIdAt(int index)
+    {
+        return index >= 0 && index < Technologies.Length ? Technologies[index].id : null;
+    }
+
+    public string GetTechnologyTitle(string id)
+    {
+        TechnologyDefinition technology = FindTechnology(id);
+        return technology != null ? technology.title : string.Empty;
+    }
+
+    public string GetTechnologyDescription(string id)
+    {
+        TechnologyDefinition technology = FindTechnology(id);
+        return technology != null ? technology.description : string.Empty;
+    }
+
+    public ResourceAmounts GetTechnologyCost(string id)
+    {
+        TechnologyDefinition technology = FindTechnology(id);
+        if (technology == null || technology.cost == null) return null;
+        return new ResourceAmounts
+        {
+            wood = technology.cost.wood,
+            stone = technology.cost.stone,
+            gold = technology.cost.gold,
+            food = technology.cost.food
+        };
+    }
+
     public bool IsTechnologyResearched(string id)
     {
         return State != null && !string.IsNullOrEmpty(id) && State.researchedTechnologies.Contains(id);
+    }
+
+    public bool CanResearch(string id, ResourceInventory inventory)
+    {
+        TechnologyDefinition technology = FindTechnology(id);
+        if (technology == null || inventory == null || IsTechnologyResearched(id)) return false;
+        if ((int)CurrentAge + 1 < technology.ageLevel) return false;
+        if (!string.IsNullOrEmpty(technology.prerequisite) &&
+            !IsTechnologyResearched(technology.prerequisite)) return false;
+        return inventory.HasEnough(technology.cost);
     }
 
     public bool TryResearch(string id, ResourceInventory inventory)
