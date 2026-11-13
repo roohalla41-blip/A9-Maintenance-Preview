@@ -94,7 +94,7 @@ public class GridBuildingSystem : MonoBehaviour
 
         GameObject building = GameObject.CreatePrimitive(definition.Shape);
         building.transform.position = point + Vector3.up * definition.Footprint.y * .5f;
-        building.transform.localScale = definition.Footprint;
+        building.transform.localScale = definition.WorldScale;
         Renderer renderer = building.GetComponent<Renderer>();
         if (renderer != null) renderer.material.color = definition.Color;
 
