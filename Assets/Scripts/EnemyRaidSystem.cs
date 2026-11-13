@@ -383,7 +383,9 @@ public sealed class ArmoredVehicleGuard : MonoBehaviour
         GameObject barrel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         barrel.name = "لوله دفاعی";
         barrel.transform.SetParent(root.transform, false);
-        barrel.transform.localPosition = new Vector3(0f, 1.08f, -.72f);
+        // Unity forward is +Z; keep the barrel aligned with the vehicle's
+        // forward direction so target-facing rotation aims the weapon correctly.
+        barrel.transform.localPosition = new Vector3(0f, 1.08f, .72f);
         barrel.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
         barrel.transform.localScale = new Vector3(.14f, .7f, .14f);
         barrel.GetComponent<Renderer>().material.color = new Color(.16f, .18f, .16f);
