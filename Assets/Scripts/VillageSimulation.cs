@@ -8,6 +8,7 @@ public class VillageSimulation : MonoBehaviour
 
     [Min(1)] public int population = 7;
     [Min(0)] public int soldiers = 2;
+    [Min(0)] public int armoredVehicles = 0;
 
     public ResourceInventory Inventory { get; private set; }
 
@@ -27,6 +28,7 @@ public class VillageSimulation : MonoBehaviour
         public int version = RosterVersion;
         public int population;
         public int soldiers;
+        public int armoredVehicles;
     }
 
     private string RosterPath { get { return Path.Combine(Application.persistentDataPath, "village-roster.json"); } }
@@ -55,6 +57,8 @@ public class VillageSimulation : MonoBehaviour
         LoadRoster();
 
         SpawnPeople(population, soldiers);
+        for (int i = 0; i < armoredVehicles; i++)
+            ArmoredVehicleGuard.Create(new Vector3(Random.Range(-8f, 8f), .25f, Random.Range(-8f, 8f)));
     }
 
     private void Update()
@@ -92,7 +96,8 @@ public class VillageSimulation : MonoBehaviour
             {
                 version = RosterVersion,
                 population = Mathf.Clamp(population, 1, MaximumRosterCount),
-                soldiers = Mathf.Clamp(soldiers, 0, MaximumRosterCount)
+                soldiers = Mathf.Clamp(soldiers, 0, MaximumRosterCount),
+                armoredVehicles = Mathf.Clamp(armoredVehicles, 0, 50)
             };
             File.WriteAllText(RosterTempPath, JsonUtility.ToJson(data));
             if (File.Exists(RosterPath))
@@ -125,6 +130,7 @@ public class VillageSimulation : MonoBehaviour
         if (data == null) return;
         population = Mathf.Clamp(data.population, 1, MaximumRosterCount);
         soldiers = Mathf.Clamp(data.soldiers, 0, MaximumRosterCount);
+        armoredVehicles = Mathf.Clamp(data.armoredVehicles, 0, 50);
     }
 
     private RosterSaveData ReadRosterFile(string path)
