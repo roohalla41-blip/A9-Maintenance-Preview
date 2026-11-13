@@ -52,14 +52,25 @@ public static class BuildingProgressionRules
 
     public static string GetBuildingUpgradeRequirement(int buildingId, int nextLevel, int capitalLevel)
     {
-        if (buildingId == 3 && nextLevel >= 2 && capitalLevel < 2)
-            return "برای این ارتقا، تالار مرکزی باید سطح ۲ باشد.";
-        if ((buildingId == 11 || buildingId == 6) && nextLevel >= 2 && capitalLevel < 4)
-            return "برای این ارتقا، تالار مرکزی باید سطح ۴ باشد.";
-        if (buildingId == 8 && nextLevel >= 2 && capitalLevel < 8)
-            return "برای این ارتقا، تالار مرکزی باید سطح ۸ باشد.";
-        if (buildingId == 9 && nextLevel >= 2 && capitalLevel < 12)
-            return "برای این ارتقا، تالار مرکزی باید سطح ۱۲ باشد.";
+        int requiredCapital = 1;
+        switch (nextLevel)
+        {
+            case 2: requiredCapital = 2; break;
+            case 3: requiredCapital = 6; break;
+            case 4: requiredCapital = 11; break;
+            case 5: requiredCapital = 16; break;
+            default: return null;
+        }
+
+        // Specialized military buildings enter the progression at later eras.
+        if (buildingId == 11 && nextLevel == 2) requiredCapital = 4;  // armory
+        if (buildingId == 8 && nextLevel == 2) requiredCapital = 8;   // academy
+        if (buildingId == 9 && nextLevel == 2) requiredCapital = 12;  // siege workshop
+
+        if (capitalLevel < requiredCapital)
+            return "برای ارتقای این ساختمان به سطح " + nextLevel +
+                "، تالار مرکزی باید سطح " + requiredCapital + " باشد.";
+
         return null;
     }
 
