@@ -117,8 +117,9 @@ public sealed class EmpireProgressionSystem : MonoBehaviour
         if (cost == null || inventory == null || Experience < ExperienceToNextLevel ||
             !inventory.TrySpend(cost)) return false;
 
+        int requiredExperience = ExperienceToNextLevel;
         State.capitalLevel++;
-        State.experience -= ExperienceToNextLevel;
+        State.experience -= requiredExperience;
         Save();
         RaiseChanged();
         return true;
