@@ -36,6 +36,7 @@ public static class MobileUiLayout
 
     public static bool IsHudPosition(Vector2 screenPosition)
     {
+        if (TechnologyResearchPanel.IsOpen) return true;
         Vector2 logical = ToLogicalScreenPosition(screenPosition);
         float logicalHeight = Screen.height / Scale;
         float guiY = logicalHeight - logical.y;
