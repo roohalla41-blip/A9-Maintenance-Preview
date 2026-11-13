@@ -96,7 +96,16 @@ public class EnemyRaidSystem : MonoBehaviour
             return;
         }
 
-        if (!economy.TrySpend(25, 0, 20))
+        int soldierLimit = 20 + barracksLevel * 20;
+        if (economy.soldiers >= soldierLimit)
+        {
+            status = "ظرفیت سربازخانه سطح " + barracksLevel + " تکمیل شده است";
+            return;
+        }
+
+        int woodCost = 25 + (barracksLevel - 1) * 8;
+        int foodCost = 20 + (barracksLevel - 1) * 6;
+        if (!economy.TrySpend(woodCost, 0, foodCost))
         {
             status = "منابع کافی برای آموزش نگهبان ندارید";
             return;
@@ -112,8 +121,8 @@ public class EnemyRaidSystem : MonoBehaviour
         EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
         int armyTier = BuildingProgressionRules.GetArmyTier(
             progression != null ? progression.CapitalLevel : 1);
-        trainedGuard.attackDamage = 8f + armyTier * 5f;
-        trainedGuard.moveSpeed = 2.8f + armyTier * .25f;
+        trainedGuard.attackDamage = 8f + armyTier * 5f + (barracksLevel - 1) * 2.5f;
+        trainedGuard.moveSpeed = 2.8f + armyTier * .25f + (barracksLevel - 1) * .08f;
         economy.soldiers++;
         LocalSaveCoordinator coordinator = FindObjectOfType<LocalSaveCoordinator>();
         if (coordinator != null)
@@ -124,7 +133,7 @@ public class EnemyRaidSystem : MonoBehaviour
             economy.SaveRoster();
         }
         status = "نگهبان سطح " + Mathf.Max(1, armyTier) +
-            " آموزش دید؛ قدرت نیرو با ارتقای سربازخانه و زرادخانه افزایش می‌یابد";
+            " آموزش دید؛ ظرفیت سربازخانه: " + soldierLimit;
     }
 
     public void TrainArmoredVehicle()
