@@ -14,6 +14,11 @@ public class PrototypeBootstrap : MonoBehaviour
         if (GetComponent<VillageSimulation>() == null)
             gameObject.AddComponent<VillageSimulation>();
 
+        // Persistent empire progression, era unlocks and research are independent
+        // from the temporary village simulation and remain local to this device.
+        if (GetComponent<EmpireProgressionSystem>() == null)
+            gameObject.AddComponent<EmpireProgressionSystem>();
+
         GameObject cameraObject = Camera.main != null ? Camera.main.gameObject : new GameObject("Main Camera");
         cameraObject.tag = "MainCamera";
         Camera cam = cameraObject.GetComponent<Camera>();
