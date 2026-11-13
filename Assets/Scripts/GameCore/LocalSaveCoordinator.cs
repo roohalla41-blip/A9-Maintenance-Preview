@@ -19,6 +19,8 @@ public sealed class LocalSaveCoordinator : MonoBehaviour
         // VillageSimulation owns the initial resource restore. This coordinator
         // starts after scene initialization and only handles subsequent saves.
         ResolveSystems();
+        if (!BuildingWorldSaveSystem.Load(out string loadError) && !string.IsNullOrEmpty(loadError))
+            Debug.LogWarning("Building save could not be restored: " + loadError);
         initialized = true;
     }
 
@@ -49,6 +51,8 @@ public sealed class LocalSaveCoordinator : MonoBehaviour
             Debug.LogWarning("Local resource save did not complete.");
         if (progression != null)
             progression.Save();
+        if (!BuildingWorldSaveSystem.Save(out string buildingError) && !string.IsNullOrEmpty(buildingError))
+            Debug.LogWarning("Building save did not complete: " + buildingError);
     }
 
     private void OnApplicationPause(bool paused)
