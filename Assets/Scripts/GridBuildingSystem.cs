@@ -41,10 +41,7 @@ public class GridBuildingSystem : MonoBehaviour
 
     private bool IsBuildUiPosition(Vector2 screenPosition)
     {
-        Vector2 logical = MobileUiLayout.ToLogicalScreenPosition(screenPosition);
-        float guiY = (Screen.height / MobileUiLayout.Scale) - logical.y;
-        return logical.x < 430f &&
-               (guiY < 200f || (guiY > 370f && guiY < 590f));
+        return MobileUiLayout.IsHudPosition(screenPosition);
     }
 
     private void PlaceBuilding(Vector2 screenPosition)
