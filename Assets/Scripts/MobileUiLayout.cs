@@ -12,7 +12,7 @@ public static class MobileUiLayout
         {
             float widthScale = Screen.width / 430f;
             float heightScale = Screen.height / 760f;
-            return Mathf.Clamp(Mathf.Min(widthScale, heightScale), 0.65f, 1.25f);
+            return Mathf.Clamp(Mathf.Min(widthScale, heightScale), 0.65f, 3f);
         }
     }
 
