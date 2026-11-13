@@ -83,17 +83,14 @@ public class EnemyRaidSystem : MonoBehaviour
             return;
         }
 
-        bool hasBarracks = false;
         BuildingInstance[] buildings = FindObjectsOfType<BuildingInstance>();
+        int barracksLevel = 0;
         foreach (BuildingInstance building in buildings)
         {
             if (building != null && building.definitionId == 3)
-            {
-                hasBarracks = true;
-                break;
-            }
+                barracksLevel = Mathf.Max(barracksLevel, building.level);
         }
-        if (!hasBarracks)
+        if (barracksLevel == 0)
         {
             status = "برای آموزش نگهبان، ابتدا سربازخانه بساز";
             return;
@@ -111,7 +108,12 @@ public class EnemyRaidSystem : MonoBehaviour
         guard.transform.localScale = new Vector3(.65f, 1f, .65f);
         Renderer renderer = guard.GetComponent<Renderer>();
         if (renderer != null) renderer.material.color = new Color(.25f, .34f, .58f);
-        guard.AddComponent<VillageGuard>();
+        VillageGuard trainedGuard = guard.AddComponent<VillageGuard>();
+        EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
+        int armyTier = BuildingProgressionRules.GetArmyTier(
+            progression != null ? progression.CapitalLevel : 1);
+        trainedGuard.attackDamage = 8f + armyTier * 5f;
+        trainedGuard.moveSpeed = 2.8f + armyTier * .25f;
         economy.soldiers++;
         LocalSaveCoordinator coordinator = FindObjectOfType<LocalSaveCoordinator>();
         if (coordinator != null)
@@ -121,7 +123,8 @@ public class EnemyRaidSystem : MonoBehaviour
             GameSaveSystem.Save(economy.Inventory);
             economy.SaveRoster();
         }
-        status = "یک نگهبان تازه آموزش دید";
+        status = "نگهبان سطح " + Mathf.Max(1, armyTier) +
+            " آموزش دید؛ قدرت نیرو با ارتقای سربازخانه و زرادخانه افزایش می‌یابد";
     }
 
     public void DamageVillage(int amount)
