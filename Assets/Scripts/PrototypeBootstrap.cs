@@ -45,5 +45,8 @@ public class PrototypeBootstrap : MonoBehaviour
 
         if (GetComponent<BuildingUpgradeSystem>() == null)
             gameObject.AddComponent<BuildingUpgradeSystem>();
+
+        if (GetComponent<LocalSaveCoordinator>() == null)
+            gameObject.AddComponent<LocalSaveCoordinator>();
     }
 }
