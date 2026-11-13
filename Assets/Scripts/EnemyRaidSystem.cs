@@ -89,6 +89,7 @@ public class EnemyRaidSystem : MonoBehaviour
         if (renderer != null) renderer.material.color = new Color(.25f, .34f, .58f);
         guard.AddComponent<VillageGuard>();
         economy.soldiers++;
+        economy.SaveRoster();
         status = "یک نگهبان تازه آموزش دید";
     }
 
