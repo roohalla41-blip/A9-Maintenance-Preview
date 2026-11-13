@@ -154,8 +154,8 @@ public sealed class EmpireProgressionSystem : MonoBehaviour
             case 5: return CapitalLevel >= 3;  // stone wall
             case 6: return CapitalLevel >= 6;  // cannon tower
             case 7: return CapitalLevel >= 11; // advanced keep
-            case 8: return CapitalLevel >= 16; // royal academy
-            case 9: return CapitalLevel >= 21; // siege workshop
+            case 8: return CapitalLevel >= 8;  // royal academy
+            case 9: return CapitalLevel >= 12; // siege workshop
             case 10: return CapitalLevel >= 26; // grand palace
             case 11: return CapitalLevel >= 4;  // armory
             default: return false;
