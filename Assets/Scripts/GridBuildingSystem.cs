@@ -125,6 +125,28 @@ public class GridBuildingSystem : MonoBehaviour
         if (GUI.Button(new Rect(12, 148, 120, 32), buildMode ? "خروج از ساخت" : "ساخت‌وساز"))
             buildMode = !buildMode;
 
+        EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
+        VillageSimulation village = VillageSimulation.Instance;
+        if (progression != null && village != null && village.Inventory != null)
+        {
+            int requiredXp = progression.ExperienceToNextLevel;
+            string capitalLabel = progression.CapitalLevel >= EmpireProgressionSystem.MaximumCapitalLevel
+                ? "پایتخت: حداکثر سطح"
+                : "ارتقای پایتخت " + progression.CapitalLevel + " | XP " +
+                  progression.Experience + "/" + requiredXp;
+            GUI.enabled = progression.CanUpgradeCapital(village.Inventory);
+            if (GUI.Button(new Rect(142, 148, 248, 32), capitalLabel))
+            {
+                if (progression.TryUpgradeCapital(village.Inventory))
+                {
+                    LocalSaveCoordinator coordinator = FindObjectOfType<LocalSaveCoordinator>();
+                    if (coordinator != null) coordinator.SaveAll();
+                    else GameSaveSystem.Save(village.Inventory);
+                }
+            }
+            GUI.enabled = true;
+        }
+
         if (buildMode)
         {
             for (int i = 1; i <= BuildingCatalog.Count; i++)
@@ -132,9 +154,13 @@ public class GridBuildingSystem : MonoBehaviour
                 BuildingDefinition definition = BuildingCatalog.Get(i);
                 float x = 12f + ((i - 1) % 3) * 132f;
                 float y = 388f + ((i - 1) / 3) * 38f;
-                string label = (selectedBuilding == i ? "✓ " : "") + i + ". " + definition.DisplayName;
+                bool unlocked = progression == null || progression.IsBuildingUnlocked(i);
+                string label = (selectedBuilding == i ? "✓ " : "") + i + ". " +
+                    definition.DisplayName + (unlocked ? "" : " | قفل");
+                GUI.enabled = unlocked;
                 if (GUI.Button(new Rect(x, y, 126, 32), label))
                     selectedBuilding = i;
+                GUI.enabled = true;
             }
 
             BuildingDefinition selected = BuildingCatalog.Get(selectedBuilding);
