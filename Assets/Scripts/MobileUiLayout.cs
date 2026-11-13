@@ -49,8 +49,11 @@ public static class MobileUiLayout
         if (guiY >= 188f && guiY <= 382f) return true;     // resources and actions
 
         GridBuildingSystem builder = Object.FindObjectOfType<GridBuildingSystem>();
-        if (builder != null && builder.IsBuildMode && guiY >= 384f && guiY <= 582f)
+        bool buildMode = builder != null && builder.IsBuildMode;
+        if (buildMode && guiY >= 384f && guiY <= 582f)
             return true;                                  // building selection grid
+        if (!buildMode && guiY >= 396f && guiY <= 550f)
+            return true;                                  // raid status and training buttons
 
         if (guiY >= 588f && guiY <= 626f) return true;     // research shortcut
         if (guiY >= logicalHeight - 142f && guiY <= logicalHeight - 4f)
