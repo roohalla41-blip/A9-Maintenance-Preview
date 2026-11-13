@@ -1,0 +1,46 @@
+name: Build Afghanistan Old Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - '.github/workflows/android-apk.yml'
+
+jobs:
+  build:
+    name: Unity Android build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify Unity license secret
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.UNITY_LICENSE }}" ]; then
+            echo "::error::Missing UNITY_LICENSE secret. Add the Unity license file contents in GitHub Actions secrets."
+            exit 1
+          fi
+
+      - name: Build Android APK with Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: .
+          unityVersion: 6000.0.0f1
+          targetPlatform: Android
+          buildMethod: BuildScript.BuildAndroid
+          allowDirtyBuild: true
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AfghanistanOld-Android-APK
+          path: Build/Android/AfghanistanOld.apk
+          if-no-files-found: error
+          retention-days: 14
