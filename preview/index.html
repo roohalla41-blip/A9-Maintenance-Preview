@@ -69,6 +69,6 @@ try{let s=JSON.parse(localStorage.getItem("afghan-village-save")||"null");if(s&&
 setInterval(()=>saveGame(false),10000);
 document.addEventListener("visibilitychange",()=>{if(document.hidden)saveGame(false)});
 window.addEventListener("pagehide",()=>saveGame(false));
-setInterval(()=>{wood+=2;food+=Math.max(1,Math.floor(guards/2));raidTimer--;if(raidTimer<=0){raidNo++;for(let i=0;i<Math.min(raidNo+2,8);i++)raiders.push({x:Math.cos(i*Math.PI*2/Math.min(raidNo+2,8))*23,z:Math.sin(i*Math.PI*2/Math.min(raidNo+2,8))*23});raidTimer=55;toast("مهاجمان به اطراف دهکده رسیدند!")};updateHud();if(raiders.length){for(const e of raiders){let d=Math.hypot(e.x-3,e.z-3)||1;e.x-=((e.x-3)/d)*.18;e.z-=((e.z-3)/d)*.18}if(raiders.some(e=>Math.hypot(e.x-3,e.z-3)<3)){raiders=[];toast("نگهبانان حمله را دفع کردند")};buildWorld()}},1000);updateHud();
+setInterval(()=>{wood+=2;food+=Math.max(1,Math.floor(guards/2));raidTimer--;if(raidTimer<=0){raidNo++;for(let i=0;i<Math.min(raidNo+2,8);i++)raiders.push({x:Math.cos(i*Math.PI*2/Math.min(raidNo+2,8))*23,z:Math.sin(i*Math.PI*2/Math.min(raidNo+2,8))*23});raidTimer=55;toast("مهاجمان به اطراف دهکده رسیدند!")};updateHud();if(raiders.length){for(const e of raiders){let d=Math.hypot(e.x-3,e.z-3)||1;e.x-=((e.x-3)/d)*.18;e.z-=((e.z-3)/d)*.18}if(raiders.some(e=>Math.hypot(e.x-3,e.z-3)<3)){raiders=[];toast("نگهبانان حمله را دفع کردند")};buildWorld()}},1000);if(vertexCount===0)buildWorld();updateHud();draw();
 })();
 </script></body></html>
