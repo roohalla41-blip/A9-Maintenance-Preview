@@ -34,7 +34,17 @@ public static class BuildingCatalog
         new BuildingDefinition(4, "برج نگهبانی", new Vector3(2.2f, 4.2f, 2.2f), 65, 45, 15,
             new Color(.65f, .59f, .46f), PrimitiveType.Cylinder),
         new BuildingDefinition(5, "دیوار دفاعی", new Vector3(4f, 2.2f, 1f), 25, 35, 5,
-            new Color(.48f, .45f, .4f), PrimitiveType.Cube)
+            new Color(.48f, .45f, .4f), PrimitiveType.Cube),
+        new BuildingDefinition(6, "برج توپخانه", new Vector3(2.8f, 4.8f, 2.8f), 110, 95, 25,
+            new Color(.58f, .34f, .19f), PrimitiveType.Cylinder),
+        new BuildingDefinition(7, "دژ سنگی", new Vector3(5f, 5f, 5f), 180, 240, 70,
+            new Color(.43f, .48f, .52f), PrimitiveType.Cube),
+        new BuildingDefinition(8, "آکادمی سلطنتی", new Vector3(4.5f, 3.4f, 4f), 210, 180, 120,
+            new Color(.32f, .43f, .62f), PrimitiveType.Cube),
+        new BuildingDefinition(9, "کارگاه محاصره", new Vector3(5f, 3f, 4f), 260, 190, 150,
+            new Color(.42f, .34f, .28f), PrimitiveType.Cube),
+        new BuildingDefinition(10, "کاخ بزرگ", new Vector3(7f, 6f, 7f), 420, 380, 260,
+            new Color(.72f, .57f, .29f), PrimitiveType.Cube)
     };
 
     public static int Count { get { return Definitions.Length; } }
