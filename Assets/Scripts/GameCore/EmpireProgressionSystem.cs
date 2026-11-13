@@ -105,18 +105,25 @@ public sealed class EmpireProgressionSystem : MonoBehaviour
         };
     }
 
+    public string GetCapitalBuildingRequirement()
+    {
+        return BuildingProgressionRules.GetCapitalRequirement(CapitalLevel + 1);
+    }
+
     public bool CanUpgradeCapital(ResourceInventory inventory)
     {
         ResourceAmounts cost = GetCapitalUpgradeCost();
         return cost != null && inventory != null &&
+            string.IsNullOrEmpty(GetCapitalBuildingRequirement()) &&
             Experience >= ExperienceToNextLevel && inventory.HasEnough(cost);
     }
 
     public bool TryUpgradeCapital(ResourceInventory inventory)
     {
         ResourceAmounts cost = GetCapitalUpgradeCost();
-        if (cost == null || inventory == null || Experience < ExperienceToNextLevel ||
-            !inventory.TrySpend(cost)) return false;
+        if (cost == null || inventory == null ||
+            !string.IsNullOrEmpty(GetCapitalBuildingRequirement()) ||
+            Experience < ExperienceToNextLevel || !inventory.TrySpend(cost)) return false;
 
         int requiredExperience = ExperienceToNextLevel;
         State.capitalLevel++;
@@ -150,6 +157,7 @@ public sealed class EmpireProgressionSystem : MonoBehaviour
             case 8: return CapitalLevel >= 16; // royal academy
             case 9: return CapitalLevel >= 21; // siege workshop
             case 10: return CapitalLevel >= 26; // grand palace
+            case 11: return CapitalLevel >= 4;  // armory
             default: return false;
         }
     }
