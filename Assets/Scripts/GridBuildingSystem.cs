@@ -118,8 +118,8 @@ public class GridBuildingSystem : MonoBehaviour
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
         GUI.Box(new Rect(12, 12, 390, 132),
             "افغانستان قدیم | ساخت‌وساز دهکده\n" +
-            "رایانه: WASD حرکت، راست‌کلیک چرخش، چرخ ماوس زوم\n" +
-            "B حالت ساخت | 1 تا 5 انتخاب ساختمان\n" +
+            "لمس یک انگشت: چرخش دوربین | دو انگشت: حرکت و زوم\n" +
+            "رایانه: WASD و ماوس | انتخاب از فهرست ۱۰ ساختمان\n" +
             "حالت ساخت: " + (buildMode ? "روشن" : "خاموش"));
 
         if (GUI.Button(new Rect(12, 148, 120, 32), buildMode ? "خروج از ساخت" : "ساخت‌وساز"))
