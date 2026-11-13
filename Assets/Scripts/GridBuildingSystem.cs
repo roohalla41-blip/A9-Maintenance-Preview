@@ -47,7 +47,7 @@ public class GridBuildingSystem : MonoBehaviour
         Vector2 logical = MobileUiLayout.ToLogicalScreenPosition(screenPosition);
         float guiY = (Screen.height / MobileUiLayout.Scale) - logical.y;
         return logical.x < 430f &&
-               (guiY < 200f || (guiY > 350f && guiY < 510f));
+               (guiY < 200f || (guiY > 370f && guiY < 550f));
     }
 
     private void PlaceBuilding(Vector2 screenPosition)
@@ -131,7 +131,7 @@ public class GridBuildingSystem : MonoBehaviour
             {
                 BuildingDefinition definition = BuildingCatalog.Get(i);
                 float x = 12f + ((i - 1) % 3) * 132f;
-                float y = 370f + ((i - 1) / 3) * 38f;
+                float y = 388f + ((i - 1) / 3) * 38f;
                 string label = (selectedBuilding == i ? "✓ " : "") + i + ". " + definition.DisplayName;
                 if (GUI.Button(new Rect(x, y, 126, 32), label))
                     selectedBuilding = i;
@@ -140,7 +140,7 @@ public class GridBuildingSystem : MonoBehaviour
             BuildingDefinition selected = BuildingCatalog.Get(selectedBuilding);
             if (selected != null)
             {
-                GUI.Box(new Rect(12, 446, 390, 38),
+                GUI.Box(new Rect(12, 464, 390, 38),
                     "هزینه " + selected.DisplayName + ": " +
                     selected.Cost.wood + " چوب، " +
                     selected.Cost.stone + " سنگ، " +
