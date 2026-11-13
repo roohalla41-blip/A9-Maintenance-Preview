@@ -261,10 +261,14 @@ public class EnvironmentBuilder : MonoBehaviour
 
     private Material MakeMaterial(Color color)
     {
-        Shader shader = Shader.Find("Standard");
-        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null) shader = Shader.Find("Standard");
+        if (shader == null) shader = Shader.Find("Unlit/Color");
         Material material = new Material(shader);
-        material.color = color;
+        if (material.HasProperty("_BaseColor"))
+            material.SetColor("_BaseColor", color);
+        if (material.HasProperty("_Color"))
+            material.SetColor("_Color", color);
         return material;
     }
 }
