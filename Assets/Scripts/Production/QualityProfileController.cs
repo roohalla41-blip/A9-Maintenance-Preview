@@ -10,7 +10,7 @@ namespace AfghanistanOld.Settings
     public sealed class QualityProfile : ScriptableObject
     {
         [Header("Rendering")]
-        [Range(0, 2)] public int shadowCascades = 2;
+        [Range(0, 4)] public int shadowCascades = 2;
         [Range(0, 4)] public int antiAliasing = 2;
         [Range(0.5f, 2f)] public float renderScale = 1f;
         [Range(30, 120)] public int targetFrameRate = 60;
@@ -85,6 +85,7 @@ namespace AfghanistanOld.Settings
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = frameRate;
             SetUniversalRenderScale(renderScale);
+            SetUniversalSoftShadows(softShadows);
 
             CurrentTier = tier;
             if (persist)
@@ -106,6 +107,22 @@ namespace AfghanistanOld.Settings
 
         // Avoid a hard assembly dependency: the project can still compile if
         // the render pipeline package is changed, while URP receives its scale.
+        private static void SetUniversalSoftShadows(bool enabled)
+        {
+            try
+            {
+                object pipeline = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline;
+                if (pipeline == null) return;
+                PropertyInfo property = pipeline.GetType().GetProperty("supportsSoftShadows", InstanceFlags);
+                if (property != null && property.CanWrite)
+                    property.SetValue(pipeline, enabled, null);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("Could not apply soft-shadow setting: " + exception.Message);
+            }
+        }
+
         private static void SetUniversalRenderScale(float scale)
         {
             try
