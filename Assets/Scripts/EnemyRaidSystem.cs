@@ -145,7 +145,7 @@ public class VillageGuard : MonoBehaviour
     {
         Raider nearest = null;
         float best = float.MaxValue;
-        for (int i = 0; i < Raider.Active.Count; i++)
+        for (int i = 0; i < Raider.ActiveCount; i++)
         {
             Raider enemy = Raider.GetActive(i);
             if (enemy == null) continue;
