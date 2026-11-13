@@ -1,105 +1,138 @@
 using UnityEngine;
+
 public class GridBuildingSystem : MonoBehaviour
 {
-    public float gridSize = 1f;
-    public float buildRadius = 17f;
+    [Min(.25f)] public float gridSize = 1f;
+    [Min(1f)] public float buildRadius = 17f;
+
     private bool buildMode;
     private int selectedBuilding = 1;
     private Camera mainCamera;
-    private void Start() { mainCamera = Camera.main; }
+
+    private void Start()
+    {
+        mainCamera = Camera.main;
+    }
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.B)) buildMode = !buildMode;
-        if (Input.GetKeyDown(KeyCode.Alpha1)) selectedBuilding = 1;
-        if (Input.GetKeyDown(KeyCode.Alpha2)) selectedBuilding = 2;
-        if (Input.GetKeyDown(KeyCode.Alpha3)) selectedBuilding = 3;
-        if (Input.GetKeyDown(KeyCode.Alpha4)) selectedBuilding = 4;
-        if (Input.GetKeyDown(KeyCode.Alpha5)) selectedBuilding = 5;
-        if (buildMode && Input.GetMouseButtonDown(0)) PlaceBuilding();
+        if (Input.GetKeyDown(KeyCode.B))
+            buildMode = !buildMode;
+
+        for (int i = 1; i <= BuildingCatalog.Count; i++)
+            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i - 1)))
+                selectedBuilding = i;
+
+        if (!buildMode) return;
+
+        // Touch input is handled separately so a tap is never placed twice.
+        if (Input.touchCount > 0)
+        {
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch touch = Input.GetTouch(i);
+                if (touch.phase == TouchPhase.Ended && !IsBuildUiPosition(touch.position))
+                    PlaceBuilding(touch.position);
+            }
+        }
+        else if (Input.GetMouseButtonDown(0) && !IsBuildUiPosition(Input.mousePosition))
+        {
+            PlaceBuilding(Input.mousePosition);
+        }
     }
-    private void PlaceBuilding()
+
+    private bool IsBuildUiPosition(Vector2 screenPosition)
+    {
+        float guiY = Screen.height - screenPosition.y;
+        return screenPosition.x < 430f &&
+               (guiY < 155f || (guiY > 350f && guiY < 455f));
+    }
+
+    private void PlaceBuilding(Vector2 screenPosition)
     {
         if (mainCamera == null) mainCamera = Camera.main;
         if (mainCamera == null) return;
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+
+        BuildingDefinition definition = BuildingCatalog.Get(selectedBuilding);
+        VillageSimulation economy = VillageSimulation.Instance;
+        if (definition == null || economy == null || economy.Inventory == null) return;
+        if (!economy.Inventory.HasEnough(definition.Cost)) return;
+
+        Ray ray = mainCamera.ScreenPointToRay(screenPosition);
         Plane ground = new Plane(Vector3.up, Vector3.zero);
         if (!ground.Raycast(ray, out float enter)) return;
+
         Vector3 point = ray.GetPoint(enter);
         point.x = Mathf.Round(point.x / gridSize) * gridSize;
         point.z = Mathf.Round(point.z / gridSize) * gridSize;
         if (new Vector2(point.x, point.z).magnitude > buildRadius) return;
-        Vector3 size = GetSize();
-        Collider[] hits = Physics.OverlapBox(point + Vector3.up * .55f, new Vector3(size.x * .45f, .5f, size.z * .45f));
+
+        Vector3 halfExtents = new Vector3(
+            definition.Footprint.x * .46f,
+            Mathf.Max(.45f, definition.Footprint.y * .45f),
+            definition.Footprint.z * .46f);
+
+        Collider[] hits = Physics.OverlapBox(
+            point + Vector3.up * definition.Footprint.y * .5f,
+            halfExtents,
+            Quaternion.identity);
+
         foreach (Collider hit in hits)
         {
+            if (hit == null) continue;
+            // Ignore the large terrain slab; other colliders reserve their space.
             if (hit.bounds.size.x > 30f || hit.bounds.size.z > 30f) continue;
             return;
         }
-        VillageSimulation economy = VillageSimulation.Instance;
-        if (economy == null) return;
-        int wood, stone, food;
-        GetCost(out wood, out stone, out food);
-        if (!economy.TrySpend(wood, stone, food)) return;
-        GameObject building = GameObject.CreatePrimitive(selectedBuilding == 4 ? PrimitiveType.Cylinder : PrimitiveType.Cube);
-        building.name = GetName();
-        building.transform.position = point + Vector3.up * size.y * .5f;
-        building.transform.localScale = size;
-        building.GetComponent<Renderer>().material.color = GetColor();
-        if (selectedBuilding == 4) building.AddComponent<WatchtowerDefense>();
+
+        // Spend only after every placement validation has passed.
+        if (!economy.Inventory.TrySpend(definition.Cost)) return;
+
+        GameObject building = GameObject.CreatePrimitive(definition.Shape);
+        building.transform.position = point + Vector3.up * definition.Footprint.y * .5f;
+        building.transform.localScale = definition.Footprint;
+        Renderer renderer = building.GetComponent<Renderer>();
+        if (renderer != null) renderer.material.color = definition.Color;
+
+        BuildingInstance instance = building.AddComponent<BuildingInstance>();
+        instance.Initialize(definition);
+
+        if (definition.Id == 4)
+            building.AddComponent<WatchtowerDefense>();
     }
-    private Vector3 GetSize()
-    {
-        switch (selectedBuilding)
-        {
-            case 1: return new Vector3(2, 1.6f, 2);
-            case 2: return new Vector3(3, 1.8f, 3);
-            case 3: return new Vector3(4, 2.1f, 3);
-            case 4: return new Vector3(2.2f, 4.2f, 2.2f);
-            default: return new Vector3(4, 2.2f, 1);
-        }
-    }
-    private void GetCost(out int wood, out int stone, out int food)
-    {
-        switch (selectedBuilding)
-        {
-            case 1: wood = 30; stone = 0; food = 10; break;
-            case 2: wood = 40; stone = 15; food = 10; break;
-            case 3: wood = 50; stone = 30; food = 20; break;
-            case 4: wood = 65; stone = 45; food = 15; break;
-            default: wood = 25; stone = 35; food = 5; break;
-        }
-    }
-    private string GetName()
-    {
-        switch (selectedBuilding)
-        {
-            case 1: return "خانه جدید";
-            case 2: return "انبار جدید";
-            case 3: return "سربازخانه جدید";
-            case 4: return "برج نگهبانی";
-            default: return "دیوار دفاعی";
-        }
-    }
-    private Color GetColor()
-    {
-        switch (selectedBuilding)
-        {
-            case 1: return new Color(.68f, .48f, .31f);
-            case 2: return new Color(.52f, .39f, .25f);
-            case 3: return new Color(.46f, .34f, .28f);
-            case 4: return new Color(.65f, .59f, .46f);
-            default: return new Color(.48f, .45f, .4f);
-        }
-    }
+
     private void OnGUI()
     {
         GUI.Box(new Rect(12, 12, 390, 132),
-            "افغانستان قدیم | نمونه دفاعی\nWASD حرکت | راست‌کلیک چرخش | چرخ ماوس زوم\nB ساخت | 1 خانه، 2 انبار، 3 سربازخانه\n4 برج نگهبانی، 5 دیوار دفاعی\nحالت ساخت: " + (buildMode ? "روشن" : "خاموش"));
+            "افغانستان قدیم | ساخت‌وساز دهکده\n" +
+            "رایانه: WASD حرکت، راست‌کلیک چرخش، چرخ ماوس زوم\n" +
+            "B حالت ساخت | 1 تا 5 انتخاب ساختمان\n" +
+            "حالت ساخت: " + (buildMode ? "روشن" : "خاموش"));
+
+        if (GUI.Button(new Rect(12, 148, 120, 32), buildMode ? "خروج از ساخت" : "ساخت‌وساز"))
+            buildMode = !buildMode;
+
         if (buildMode)
         {
-            int w, s, f;
-            GetCost(out w, out s, out f);
-            GUI.Box(new Rect(12, 370, 330, 38), GetName() + ": " + w + " چوب، " + s + " سنگ، " + f + " غذا");
+            for (int i = 1; i <= BuildingCatalog.Count; i++)
+            {
+                BuildingDefinition definition = BuildingCatalog.Get(i);
+                float x = 12f + ((i - 1) % 3) * 132f;
+                float y = 370f + ((i - 1) / 3) * 38f;
+                string label = (selectedBuilding == i ? "✓ " : "") + i + ". " + definition.DisplayName;
+                if (GUI.Button(new Rect(x, y, 126, 32), label))
+                    selectedBuilding = i;
+            }
+
+            BuildingDefinition selected = BuildingCatalog.Get(selectedBuilding);
+            if (selected != null)
+            {
+                GUI.Box(new Rect(12, 446, 390, 38),
+                    "هزینه " + selected.DisplayName + ": " +
+                    selected.Cost.wood + " چوب، " +
+                    selected.Cost.stone + " سنگ، " +
+                    selected.Cost.food + " غذا");
+            }
         }
     }
 }
