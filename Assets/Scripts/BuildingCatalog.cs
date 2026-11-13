@@ -49,14 +49,61 @@ public static class BuildingCatalog
 
 public class BuildingInstance : MonoBehaviour
 {
+    public const int MaximumLevel = 5;
+
     public int definitionId;
     public int level = 1;
+
+    private Vector3 baseScale;
+    private Color baseColor = Color.white;
+    private Renderer cachedRenderer;
+
+    public string DisplayName
+    {
+        get
+        {
+            BuildingDefinition definition = BuildingCatalog.Get(definitionId);
+            return definition != null ? definition.DisplayName : "ساختمان";
+        }
+    }
+
+    public ResourceAmounts GetUpgradeCost()
+    {
+        BuildingDefinition definition = BuildingCatalog.Get(definitionId);
+        if (definition == null || level >= MaximumLevel) return null;
+
+        // Each next level costs more than the previous one.
+        float multiplier = 0.75f + (level * 0.8f);
+        return new ResourceAmounts
+        {
+            wood = Mathf.CeilToInt(definition.Cost.wood * multiplier),
+            stone = Mathf.CeilToInt(definition.Cost.stone * multiplier),
+            food = Mathf.CeilToInt(definition.Cost.food * multiplier)
+        };
+    }
+
+    public bool TryUpgrade(ResourceInventory inventory)
+    {
+        if (inventory == null || level >= MaximumLevel) return false;
+        ResourceAmounts cost = GetUpgradeCost();
+        if (cost == null || !inventory.TrySpend(cost)) return false;
+
+        level++;
+        transform.localScale = baseScale * (1f + (level - 1) * 0.06f);
+        if (cachedRenderer != null)
+            cachedRenderer.material.color = Color.Lerp(baseColor, Color.white, (level - 1) * 0.08f);
+        gameObject.name = DisplayName + " (سطح " + level + ")";
+        return true;
+    }
 
     public void Initialize(BuildingDefinition definition)
     {
         if (definition == null) return;
         definitionId = definition.Id;
         level = 1;
+        baseScale = transform.localScale;
+        cachedRenderer = GetComponent<Renderer>();
+        if (cachedRenderer != null) baseColor = cachedRenderer.material.color;
         gameObject.name = definition.DisplayName + " (سطح ۱)";
     }
 }
