@@ -113,7 +113,14 @@ public class EnemyRaidSystem : MonoBehaviour
         if (renderer != null) renderer.material.color = new Color(.25f, .34f, .58f);
         guard.AddComponent<VillageGuard>();
         economy.soldiers++;
-        economy.SaveRoster();
+        LocalSaveCoordinator coordinator = FindObjectOfType<LocalSaveCoordinator>();
+        if (coordinator != null)
+            coordinator.SaveAll();
+        else
+        {
+            GameSaveSystem.Save(economy.Inventory);
+            economy.SaveRoster();
+        }
         status = "یک نگهبان تازه آموزش دید";
     }
 
