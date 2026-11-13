@@ -15,19 +15,23 @@ public sealed class PlacedBuildingRecord
 [Serializable]
 public sealed class PlacedBuildingSave
 {
-    public int version = 1;
+    public int version = 2;
     public List<PlacedBuildingRecord> buildings = new List<PlacedBuildingRecord>();
 }
 
-/// <summary>Persists player-placed structures locally on the device.</summary>
+/// <summary>Persists player-placed structures locally with recoverable writes.</summary>
 public static class BuildingWorldSaveSystem
 {
-    private const int CurrentVersion = 1;
+    private const int CurrentVersion = 2;
+    private const int MaximumSavedBuildings = 5000;
     private static string SavePath => Path.Combine(Application.persistentDataPath, "afghanistan-old-buildings.json");
+    private static string BackupPath => SavePath + ".bak";
+    private static bool loaded;
 
     public static bool Save(out string error)
     {
         error = null;
+        string temp = SavePath + ".tmp";
         try
         {
             var data = new PlacedBuildingSave();
@@ -35,25 +39,27 @@ public static class BuildingWorldSaveSystem
             foreach (BuildingInstance instance in instances)
             {
                 if (instance == null || !instance.isPlayerPlaced) continue;
+                if (data.buildings.Count >= MaximumSavedBuildings)
+                    throw new InvalidDataException("Too many placed buildings to save safely.");
+
                 data.buildings.Add(new PlacedBuildingRecord
                 {
                     definitionId = instance.definitionId,
-                    level = instance.level,
+                    level = Mathf.Clamp(instance.level, 1, BuildingInstance.MaximumLevel),
                     position = instance.transform.position,
                     rotation = instance.transform.rotation
                 });
             }
 
-            string temp = SavePath + ".tmp";
             Directory.CreateDirectory(Application.persistentDataPath);
             File.WriteAllText(temp, JsonUtility.ToJson(data, true));
-            if (File.Exists(SavePath)) File.Delete(SavePath);
-            File.Move(temp, SavePath);
+            ReplaceWithBackup(temp, SavePath, BackupPath);
             return true;
         }
         catch (Exception ex)
         {
             error = ex.Message;
+            TryDelete(temp);
             return false;
         }
     }
@@ -61,16 +67,29 @@ public static class BuildingWorldSaveSystem
     public static bool Load(out string error)
     {
         error = null;
-        if (!File.Exists(SavePath)) return true;
+        if (loaded) return true;
+        if (!File.Exists(SavePath) && !File.Exists(BackupPath))
+        {
+            loaded = true;
+            return true;
+        }
+
         try
         {
-            PlacedBuildingSave data = JsonUtility.FromJson<PlacedBuildingSave>(File.ReadAllText(SavePath));
-            if (data == null || data.version != CurrentVersion || data.buildings == null)
-                throw new InvalidDataException("Unsupported or invalid building save.");
+            string source = File.Exists(SavePath) ? SavePath : BackupPath;
+            PlacedBuildingSave data = ReadAndValidate(source);
+            if (data == null && File.Exists(BackupPath) && source != BackupPath)
+                data = ReadAndValidate(BackupPath);
+            if (data == null)
+                throw new InvalidDataException("Both building save files are invalid.");
+
+            BuildingInstance[] existing = UnityEngine.Object.FindObjectsOfType<BuildingInstance>();
+            foreach (BuildingInstance instance in existing)
+                if (instance != null && instance.isPlayerPlaced)
+                    UnityEngine.Object.Destroy(instance.gameObject);
 
             foreach (PlacedBuildingRecord record in data.buildings)
             {
-                if (record == null) continue;
                 BuildingDefinition definition = BuildingCatalog.Get(record.definitionId);
                 if (definition == null) continue;
 
@@ -89,6 +108,8 @@ public static class BuildingWorldSaveSystem
                 if (definition.Id == 4 || definition.Id == 6)
                     building.AddComponent<WatchtowerDefense>();
             }
+
+            loaded = true;
             return true;
         }
         catch (Exception ex)
@@ -96,5 +117,64 @@ public static class BuildingWorldSaveSystem
             error = ex.Message;
             return false;
         }
+    }
+
+    private static PlacedBuildingSave ReadAndValidate(string path)
+    {
+        try
+        {
+            PlacedBuildingSave data = JsonUtility.FromJson<PlacedBuildingSave>(File.ReadAllText(path));
+            if (data == null || data.version != CurrentVersion || data.buildings == null ||
+                data.buildings.Count > MaximumSavedBuildings)
+                return null;
+
+            foreach (PlacedBuildingRecord record in data.buildings)
+            {
+                if (record == null || BuildingCatalog.Get(record.definitionId) == null ||
+                    record.level < 1 || record.level > BuildingInstance.MaximumLevel ||
+                    !IsFinite(record.position.x) || !IsFinite(record.position.y) || !IsFinite(record.position.z) ||
+                    !IsFinite(record.rotation.x) || !IsFinite(record.rotation.y) ||
+                    !IsFinite(record.rotation.z) || !IsFinite(record.rotation.w))
+                    return null;
+            }
+            return data;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool IsFinite(float value)
+    {
+        return !float.IsNaN(value) && !float.IsInfinity(value);
+    }
+
+    private static void ReplaceWithBackup(string temp, string destination, string backup)
+    {
+        if (File.Exists(backup)) File.Delete(backup);
+        bool movedOld = false;
+        if (File.Exists(destination))
+        {
+            File.Move(destination, backup);
+            movedOld = true;
+        }
+
+        try
+        {
+            File.Move(temp, destination);
+        }
+        catch
+        {
+            if (movedOld && !File.Exists(destination) && File.Exists(backup))
+                File.Move(backup, destination);
+            throw;
+        }
+    }
+
+    private static void TryDelete(string path)
+    {
+        try { if (File.Exists(path)) File.Delete(path); }
+        catch { }
     }
 }
