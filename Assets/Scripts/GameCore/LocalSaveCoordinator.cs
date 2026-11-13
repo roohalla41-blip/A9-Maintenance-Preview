@@ -16,9 +16,9 @@ public sealed class LocalSaveCoordinator : MonoBehaviour
 
     private void Start()
     {
+        // VillageSimulation owns the initial resource restore. This coordinator
+        // starts after scene initialization and only handles subsequent saves.
         ResolveSystems();
-        if (inventory != null)
-            GameSaveSystem.Load(inventory);
         initialized = true;
     }
 
