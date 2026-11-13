@@ -2,14 +2,6 @@ name: Build Unity Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - feature/gameplay-foundation
-    paths:
-      - "Assets/**"
-      - "Packages/**"
-      - "ProjectSettings/**"
-      - ".github/workflows/build-unity-android.yml"
 
 permissions:
   contents: read
