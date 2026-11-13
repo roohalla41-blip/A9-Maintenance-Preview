@@ -59,8 +59,8 @@ public class BuildingUpgradeSystem : MonoBehaviour
 
     private void OnGUI()
     {
-        Matrix4x4 previousMatrix = MobileUiLayout.Begin();
         if (selected == null) return;
+        Matrix4x4 previousMatrix = MobileUiLayout.Begin();
 
         float y = Screen.height - 116f;
         ResourceAmounts cost = selected.GetUpgradeCost();
