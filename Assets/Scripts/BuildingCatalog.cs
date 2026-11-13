@@ -63,6 +63,7 @@ public class BuildingInstance : MonoBehaviour
 
     public int definitionId;
     public int level = 1;
+    public bool isPlayerPlaced;
 
     private Vector3 baseScale;
     private Color baseColor = Color.white;
@@ -116,4 +117,18 @@ public class BuildingInstance : MonoBehaviour
         if (cachedRenderer != null) baseColor = cachedRenderer.material.color;
         gameObject.name = definition.DisplayName + " (سطح ۱)";
     }
+    public void RestoreLevel(int savedLevel)
+    {
+        level = Mathf.Clamp(savedLevel, 1, MaximumLevel);
+        if (baseScale == Vector3.zero) baseScale = transform.localScale;
+        if (cachedRenderer == null) cachedRenderer = GetComponent<Renderer>();
+        transform.localScale = baseScale * (1f + (level - 1) * 0.06f);
+        if (cachedRenderer != null)
+        {
+            if (baseColor == Color.white) baseColor = cachedRenderer.material.color;
+            cachedRenderer.material.color = Color.Lerp(baseColor, Color.white, (level - 1) * 0.08f);
+        }
+        gameObject.name = DisplayName + " (سطح " + level + ")";
+    }
+
 }
