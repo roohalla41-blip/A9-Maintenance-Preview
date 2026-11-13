@@ -184,8 +184,8 @@ public class VillageSimulation : MonoBehaviour
 
     private void OnGUI()
     {
-        Matrix4x4 previousMatrix = MobileUiLayout.Begin();
         if (Inventory == null) return;
+        Matrix4x4 previousMatrix = MobileUiLayout.Begin();
 
         GUI.Box(new Rect(12, 132, 300, 112),
             "منابع دهکده" +
