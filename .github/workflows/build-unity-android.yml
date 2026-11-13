@@ -1,0 +1,60 @@
+name: Build Unity Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/gameplay-foundation
+    paths:
+      - "Assets/**"
+      - "Packages/**"
+      - "ProjectSettings/**"
+      - ".github/workflows/build-unity-android.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    name: Compile Unity project and package Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout game project
+        uses: actions/checkout@v4
+
+      - name: Check Unity license configuration
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          if [ -z "$UNITY_LICENSE" ]; then
+            echo "::error::UNITY_LICENSE repository secret is missing. Add a valid Unity license file as the UNITY_LICENSE secret before running this build."
+            exit 1
+          fi
+
+      - name: Build Android APK with Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: .
+          unityVersion: 2022.3.62f1
+          targetPlatform: Android
+          buildMethod: AncientAfghanistanBuild.BuildAndroid
+          buildName: AncientAfghanistan
+          buildPath: Builds/Android
+          androidAppBundle: false
+          allowDirtyBuild: true
+
+      - name: Verify APK output
+        run: |
+          test -s Builds/Android/AncientAfghanistan.apk
+          ls -lh Builds/Android/AncientAfghanistan.apk
+          file Builds/Android/AncientAfghanistan.apk
+
+      - name: Upload installable Unity APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Afghanistan-Old-Unity-Android-APK
+          path: Builds/Android/AncientAfghanistan.apk
+          if-no-files-found: error
+          retention-days: 14
