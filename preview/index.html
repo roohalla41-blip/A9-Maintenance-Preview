@@ -144,8 +144,56 @@ function addHouse(x,z,scale=1,color="#b58c5d"){
  box(x-.95*s,2.52*s,z+.55*s,.38*s,.65*s,.42*s,"#987b58");
  box(x-.95*s,2.88*s,z+.55*s,.48*s,.12*s,.5*s,"#554333");
 }
-function addTower(x,z,kind="tower-archer"){const palette={ "tower-archer":["#3f8b75","#a8d9bd","#e1c77b"],"tower-cannon":["#8c5834","#d7a35b","#39464a"],"tower-sentinel":["#64727d","#c7d2d5","#e7d29b"],"tower-arcane":["#4f5ca0","#b8c8ff","#83d9ef"],"tower":["#3f8b75","#a8d9bd","#e1c77b"]}[kind]||["#3f8b75","#a8d9bd","#e1c77b"];const [base,trim,glow]=palette;cylinder(x,1.5,z,.95,3,base,12);cylinder(x,3.05,z,1.04,.22,trim,12);if(kind==="tower-cannon"){box(x,3.55,z,2.1,.95,2.1,base);cylinder(x,4.05,z,.46,.45,trim,12);cylinder(x,4.28,z,.19,1.05,"#303c40",10);cylinder(x,3.1,z,1.17,.18,glow,12)}else if(kind==="tower-sentinel"){box(x,3.5,z,2.25,1.15,2.25,base);for(let i=0;i<4;i++){let a=i*Math.PI/2;cylinder(x+Math.cos(a)*.83,4.25,z+Math.sin(a)*.83,.19,.75,trim,8)}box(x,4.08,z,.32,.65,.32,glow)}else if(kind==="tower-arcane"){cylinder(x,3.65,z,.72,1.1,base,9);cylinder(x,4.28,z,.28,.25,glow,9);sphere(x,4.75,z,.42,glow);for(let i=0;i<4;i++){let a=i*Math.PI/2;cylinder(x+Math.cos(a)*.72,3.75,z+Math.sin(a)*.72,.12,1.2,trim,7)}}else{box(x,3.45,z,2.1,1,2.1,base);for(let i=0;i<4;i++){let a=i*Math.PI/2;cylinder(x+Math.cos(a)*.68,4.08,z+Math.sin(a)*.68,.16,.65,trim,8)}cylinder(x,4.05,z,.24,.45,glow,8)}}
-function addTree(x,z){cylinder(x,.75,z,.22,1.5,"#68452a",7);sphere(x,2,z,.95,"#456b38")}
+function addTower(x,z,kind="tower-archer"){
+ const stone="#8d795f",light="#b49a75",shadow="#5d4b39",wood="#65462e",cloth="#8a7657";
+ // Shared masonry plinth and stone shaft, with deliberately irregular buttress courses.
+ box(x,.32,z,2.55,.64,2.55,"#6e5d49");
+ box(x,1.55,z,1.92,2.55,1.92,stone);
+ for(let k=0;k<4;k++){
+   const yy=.62+k*.58;
+   box(x,yy,z-0.985,1.96,.07,.055,light);
+   box(x,yy,z+0.985,1.96,.07,.055,shadow);
+ }
+ for(const dx of [-.98,.98])for(const dz of [-.98,.98])
+   box(x+dx,1.5,z+dz,.16,2.45,.16,light);
+ if(kind==="tower-cannon"){
+   box(x,3.0,z,2.2,.82,2.2,stone);
+   box(x,3.48,z,2.55,.18,2.55,light);
+   cylinder(x,3.85,z,.23,.75,shadow,12);
+   cylinder(x,4.08,z,.13,.95,"#3d3933",10);
+   for(let i=0;i<4;i++){let a=i*Math.PI/2;box(x+Math.cos(a)*1.12,3.7,z+Math.sin(a)*1.12,.32,.55,.32,light)}
+ }else if(kind==="tower-sentinel"){
+   box(x,2.98,z,2.28,.62,2.28,light);
+   box(x,3.36,z,2.5,.16,2.5,wood);
+   // Covered observation platform and timber roof supports.
+   for(let dx of [-.82,.82])for(let dz of [-.82,.82])box(x+dx,4.0,z+dz,.13,1.25,.13,wood);
+   box(x,4.65,z,2.35,.16,2.35,wood);
+   roof(x,4.76,z,2.65,2.65,cloth);
+ }else if(kind==="tower-arcane"){
+   // Reinterpreted as a historical signal/watch beacon, not a fantasy crystal tower.
+   box(x,3.0,z,2.2,.62,2.2,light);
+   for(let dx of [-.72,.72])for(let dz of [-.72,.72])box(x+dx,3.7,z+dz,.12,.95,.12,wood);
+   box(x,4.2,z,1.75,.14,1.75,wood);
+   cylinder(x,4.7,z,.18,.8,wood,8);
+   sphere(x,5.2,z,.24,"#e0b76a");
+ }else{
+   // Open battlement with crenellations and a timber lookout deck.
+   box(x,2.92,z,2.25,.5,2.25,light);
+   box(x,3.22,z,2.48,.16,2.48,wood);
+   for(let i=0;i<4;i++){
+     const a=i*Math.PI/2;
+     box(x+Math.cos(a)*1.02,3.55,z+Math.sin(a)*1.02,.42,.62,.3,light);
+   }
+   box(x,3.38,z,1.55,.12,1.55,wood);
+   // Narrow slit windows on each visible face.
+   box(x,1.72,z-1.0,.18,.68,.06,"#3e3930");
+   box(x+1.0,1.72,z,.06,.68,.18,"#3e3930");
+ }
+ // Exterior timber ladder and a small entry door.
+ for(let i=0;i<7;i++)box(x+1.18,.38+i*.38,z,.08,.07,.55,wood);
+ box(x+1.18,1.1,z,.12,1.25,.68,shadow);
+ box(x+1.26,1.1,z,.035,.95,.42,wood);
+}function addTree(x,z){cylinder(x,.75,z,.22,1.5,"#68452a",7);sphere(x,2,z,.95,"#456b38")}
 function addQala(x,z,w=7,d=6){const wall="#a78b65";box(x,1.15,z-d/2,w,2.3,.45,wall);box(x,1.15,z+d/2,w,2.3,.45,wall);box(x-w/2,1.15,z,.45,2.3,d,wall);box(x+w/2,1.15,z,.45,2.3,d,wall);box(x,1.0,z+d/2,.9,1.65,.5,"#64452f");for(const [dx,dz] of [[-w/2,-d/2],[w/2,-d/2],[-w/2,d/2],[w/2,d/2]]){box(x+dx,2.55,z+dz,.8,.55,.8,"#b69a72");box(x+dx,2.9,z+dz,.35,.2,.35,"#8a704e")}}
 function addMinaret(x,z){cylinder(x,2.0,z,.55,4,"#b99a70",12);cylinder(x,3.7,z,.72,.25,"#8c7658",12);cylinder(x,4.2,z,.4,.8,"#b99a70",12);sphere(x,4.75,z,.43,"#c7a96f");cylinder(x,5.2,z,.035,.6,"#e2c37a",6);box(x,1.15,z-.52,.25,1.6,.12,"#5b4936")}
 function addMountain(x,z,w,h,d,color){let a=[x-w/2,0,z-d/2],b=[x+w/2,0,z-d/2],c=[x+w/2,0,z+d/2],e=[x-w/2,0,z+d/2],peak=[x,h,z];tri(a,b,peak,color);tri(b,c,peak,"#746d57");tri(c,e,peak,color);tri(e,a,peak,"#5f604d");tri(a,peak,e,"#8a8061")}
