@@ -57,7 +57,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
         if (TechnologyResearchPanel.IsOpen || selected == null) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
 
-        float y = (Screen.height / MobileUiLayout.Scale) - 116f;
+        float y = (Screen.height / MobileUiLayout.Scale) - 140f;
         ResourceAmounts cost = selected.GetUpgradeCost();
         string title = selected.DisplayName + " | سطح " + selected.level + "/" + BuildingInstance.MaximumLevel;
         EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
@@ -65,22 +65,24 @@ public class BuildingUpgradeSystem : MonoBehaviour
             selected.definitionId, selected.level + 1,
             progression != null ? progression.CapitalLevel : 1);
 
-        GUI.Box(new Rect(12f, y, 390f, 104f), title);
+        GUI.Box(new Rect(12f, y, 390f, 132f), title);
         if (cost == null)
         {
             GUI.Label(new Rect(22f, y + 28f, 360f, 24f), "این ساختمان به بالاترین سطح رسیده است.");
         }
         else
         {
-            GUI.Label(new Rect(22f, y + 25f, 365f, 22f),
+            GUI.Label(new Rect(22f, y + 23f, 365f, 30f),
+                BuildingProgressionRules.GetNextLevelBenefit(selected.definitionId, selected.level + 1));
+            GUI.Label(new Rect(22f, y + 52f, 365f, 18f),
                 "هزینه: " + cost.wood + " چوب، " + cost.stone + " سنگ، " + cost.food + " غذا");
             VillageSimulation village = VillageSimulation.Instance;
             bool canAfford = village != null && village.Inventory != null &&
                 village.Inventory.HasEnough(cost);
             GUI.enabled = canAfford && string.IsNullOrEmpty(requirement);
             if (!string.IsNullOrEmpty(requirement))
-                GUI.Label(new Rect(22f, y + 45f, 365f, 18f), requirement);
-            if (GUI.Button(new Rect(22f, y + 57f, 170f, 32f), "ارتقای ساختمان"))
+                GUI.Label(new Rect(22f, y + 70f, 365f, 18f), requirement);
+            if (GUI.Button(new Rect(22f, y + 91f, 170f, 30f), "ارتقای ساختمان"))
             {
                 if (selected != null && village != null &&
                     selected.TryUpgrade(village.Inventory))
@@ -96,7 +98,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
             GUI.enabled = true;
         }
 
-        if (GUI.Button(new Rect(202f, y + 57f, 170f, 32f), "بستن انتخاب"))
+        if (GUI.Button(new Rect(202f, y + 91f, 170f, 30f), "بستن انتخاب"))
             selected = null;
     
         MobileUiLayout.End(previousMatrix);
