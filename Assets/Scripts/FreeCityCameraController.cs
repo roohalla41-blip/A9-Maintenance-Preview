@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 /// <summary>
 /// Mobile-first strategy camera: one-finger orbit, two-finger pan/pinch,
@@ -90,8 +89,7 @@ public sealed class FreeCityCameraController : MonoBehaviour
             {
                 Vector2 delta = touch.position - previousTouch;
                 if (!singleTouchStartedOverHud &&
-                    !MobileUiLayout.IsHudPosition(touch.position) &&
-                    !IsTouchOverUi(touch.fingerId))
+                    !MobileUiLayout.IsHudPosition(touch.position))
                 {
                     yaw += delta.x * rotateSpeed;
                     pitch = Mathf.Clamp(pitch - delta.y * rotateSpeed * 0.7f, minPitch, maxPitch);
@@ -130,11 +128,6 @@ public sealed class FreeCityCameraController : MonoBehaviour
         }
 
         previousPinchDistance = 0f;
-    }
-
-    private bool IsTouchOverUi(int fingerId)
-    {
-        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(fingerId);
     }
 
     private void Pan(Vector2 screenDelta)
