@@ -1,32 +1,54 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-// Lightweight prototype combat: deliberately uses primitive characters until art assets are added.
+// Offline raid loop. Primitive visuals remain temporary until production art is integrated.
 public class EnemyRaidSystem : MonoBehaviour
 {
     public float firstRaidDelay = 35f;
     public float raidInterval = 55f;
-    public int villageHealth = 100;
+    [Min(1)] public int villageHealth = 100;
+    public int maximumRaiders = 15;
+
     private float raidTimer;
     private int raidNumber;
+    private bool raidActive;
+    private bool villageDefeated;
     private string status = "دهکده در آرامش است";
 
-    private void Start() { raidTimer = firstRaidDelay; }
+    private void Start()
+    {
+        raidTimer = Mathf.Max(5f, firstRaidDelay);
+        RefreshStatus();
+    }
 
     private void Update()
     {
-        raidTimer -= Time.deltaTime;
-        if (raidTimer <= 0f)
+        if (villageDefeated) return;
+
+        if (raidActive)
         {
-            StartRaid();
-            raidTimer = raidInterval;
+            if (Raider.ActiveCount == 0)
+            {
+                raidActive = false;
+                raidTimer = Mathf.Max(10f, raidInterval);
+                status = "حمله دفع شد؛ دهکده فرصت بازسازی دارد";
+            }
+            return;
         }
+
+        raidTimer -= Time.deltaTime;
+        if (raidTimer <= 0f) StartRaid();
     }
 
     private void StartRaid()
     {
+        if (villageDefeated || raidActive) return;
+
         raidNumber++;
-        int count = Mathf.Min(3 + raidNumber * 2, 15);
-        status = "حمله شماره " + raidNumber + " آغاز شد!";
+        int count = Mathf.Clamp(3 + raidNumber * 2, 1, Mathf.Max(1, maximumRaiders));
+        raidActive = true;
+        status = "حمله شماره " + raidNumber + " آغاز شد";
+
         for (int i = 0; i < count; i++)
         {
             float angle = (Mathf.PI * 2f * i) / count;
@@ -35,15 +57,23 @@ public class EnemyRaidSystem : MonoBehaviour
             enemy.name = "مهاجم دشمن";
             enemy.transform.position = spawn;
             enemy.transform.localScale = new Vector3(.7f, 1.05f, .7f);
-            enemy.GetComponent<Renderer>().material.color = new Color(.62f, .16f, .14f);
+            Renderer renderer = enemy.GetComponent<Renderer>();
+            if (renderer != null) renderer.material.color = new Color(.62f, .16f, .14f);
+
             Raider raider = enemy.AddComponent<Raider>();
             raider.target = new Vector3(3f, 1f, 3f);
-            raider.health = 35 + raidNumber * 5;
+            raider.health = 35f + raidNumber * 5f;
         }
     }
 
     public void TrainGuard()
     {
+        if (villageDefeated)
+        {
+            status = "دهکده سقوط کرده است؛ ابتدا بازی را از ذخیره بازیابی کن";
+            return;
+        }
+
         VillageSimulation economy = VillageSimulation.Instance;
         if (economy == null || !economy.TrySpend(25, 0, 20))
         {
@@ -55,7 +85,8 @@ public class EnemyRaidSystem : MonoBehaviour
         guard.name = "نگهبان آموزش‌دیده";
         guard.transform.position = new Vector3(Random.Range(-6f, 7f), 1f, Random.Range(-7f, 7f));
         guard.transform.localScale = new Vector3(.65f, 1f, .65f);
-        guard.GetComponent<Renderer>().material.color = new Color(.25f, .34f, .58f);
+        Renderer renderer = guard.GetComponent<Renderer>();
+        if (renderer != null) renderer.material.color = new Color(.25f, .34f, .58f);
         guard.AddComponent<VillageGuard>();
         economy.soldiers++;
         status = "یک نگهبان تازه آموزش دید";
@@ -63,17 +94,38 @@ public class EnemyRaidSystem : MonoBehaviour
 
     public void DamageVillage(int amount)
     {
+        if (villageDefeated || amount <= 0) return;
+
         villageHealth = Mathf.Max(0, villageHealth - amount);
-        if (villageHealth == 0) status = "دهکده سقوط کرد! نگهبانان بیشتری آموزش بده";
+        if (villageHealth == 0)
+        {
+            villageDefeated = true;
+            raidActive = false;
+            status = "دهکده سقوط کرد؛ حمله متوقف شد";
+            Raider.RemoveAllActive();
+        }
+    }
+
+    private void RefreshStatus()
+    {
+        if (!villageDefeated && !raidActive)
+            status = "دهکده در آرامش است";
     }
 
     private void OnGUI()
     {
         GUI.Box(new Rect(12, 292, 300, 104),
             "دفاع از دهکده | سلامت: " + villageHealth + "%\n" +
-            "حمله بعدی: " + Mathf.CeilToInt(Mathf.Max(0, raidTimer)) + " ثانیه\n" + status);
+            (villageActiveLabel()) + "\n" + status);
         if (GUI.Button(new Rect(18, 402, 180, 34), "آموزش نگهبان (۲۵ چوب، ۲۰ غذا)"))
             TrainGuard();
+    }
+
+    private string villageActiveLabel()
+    {
+        if (villageDefeated) return "وضعیت: سقوط کرده";
+        if (raidActive) return "مهاجمان باقی‌مانده: " + Raider.ActiveCount;
+        return "حمله بعدی: " + Mathf.CeilToInt(Mathf.Max(0f, raidTimer)) + " ثانیه";
     }
 }
 
@@ -87,16 +139,17 @@ public class VillageGuard : MonoBehaviour
 
     private void Update()
     {
-        Raider[] enemies = FindObjectsOfType<Raider>();
         Raider nearest = null;
         float best = float.MaxValue;
-        foreach (Raider enemy in enemies)
+        for (int i = 0; i < Raider.Active.Count; i++)
         {
-            float d = (enemy.transform.position - transform.position).sqrMagnitude;
-            if (d < best) { best = d; nearest = enemy; }
+            Raider enemy = Raider.Active[i];
+            if (enemy == null) continue;
+            float distance = (enemy.transform.position - transform.position).sqrMagnitude;
+            if (distance < best) { best = distance; nearest = enemy; }
         }
-        if (nearest == null) return;
 
+        if (nearest == null) return;
         Vector3 direction = nearest.transform.position - transform.position;
         direction.y = 0f;
         if (direction.magnitude > attackRange)
@@ -110,7 +163,7 @@ public class VillageGuard : MonoBehaviour
             if (attackTimer <= 0f)
             {
                 nearest.TakeDamage(attackDamage);
-                attackTimer = attackCooldown;
+                attackTimer = Mathf.Max(.1f, attackCooldown);
             }
         }
     }
@@ -118,13 +171,32 @@ public class VillageGuard : MonoBehaviour
 
 public class Raider : MonoBehaviour
 {
+    private static readonly List<Raider> active = new List<Raider>();
+    public static IList<Raider> Active { get { return active.AsReadOnly(); } }
+    public static int ActiveCount { get { return active.Count; } }
+
     public Vector3 target;
     public float health = 35f;
     public float moveSpeed = 1.8f;
     private float attackTimer;
+    private EnemyRaidSystem raidSystem;
+
+    private void OnEnable()
+    {
+        if (!active.Contains(this)) active.Add(this);
+        if (raidSystem == null) raidSystem = FindObjectOfType<EnemyRaidSystem>();
+    }
+
+    private void OnDisable()
+    {
+        active.Remove(this);
+    }
 
     private void Update()
     {
+        if (raidSystem == null) raidSystem = FindObjectOfType<EnemyRaidSystem>();
+        if (raidSystem == null) return;
+
         Vector3 direction = target - transform.position;
         direction.y = 0f;
         if (direction.magnitude > 1.8f)
@@ -137,8 +209,7 @@ public class Raider : MonoBehaviour
             attackTimer -= Time.deltaTime;
             if (attackTimer <= 0f)
             {
-                EnemyRaidSystem system = FindObjectOfType<EnemyRaidSystem>();
-                if (system != null) system.DamageVillage(5);
+                raidSystem.DamageVillage(5);
                 attackTimer = 2f;
             }
         }
@@ -146,7 +217,15 @@ public class Raider : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        if (amount <= 0f) return;
         health -= amount;
         if (health <= 0f) Destroy(gameObject);
+    }
+
+    public static void RemoveAllActive()
+    {
+        for (int i = active.Count - 1; i >= 0; i--)
+            if (active[i] != null) Destroy(active[i].gameObject);
+        active.Clear();
     }
 }
