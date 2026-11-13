@@ -17,6 +17,7 @@ public class GridBuildingSystem : MonoBehaviour
 
     private void Update()
     {
+        if (TechnologyResearchPanel.IsOpen) return;
         if (Input.GetKeyDown(KeyCode.B))
             buildMode = !buildMode;
 
@@ -124,6 +125,7 @@ public class GridBuildingSystem : MonoBehaviour
 
     private void OnGUI()
     {
+        if (TechnologyResearchPanel.IsOpen) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
         GUI.Box(new Rect(12, 12, 390, 132),
             "افغانستان قدیم | ساخت‌وساز دهکده\n" +
