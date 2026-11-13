@@ -135,6 +135,20 @@ function showBeastStable(){let items=[["lion","شیر نگهبان افسانه�
 function upgradeEmpire(){if(empire.level>=30){toast("بالاترین سطح پایتخت را داری");return}let c=[90+empire.level*28,65+empire.level*34,20+empire.level*22];if(empire.xp<needXP()||wood<c[0]||stone<c[1]||gold<c[2]){toast("تجربه یا منابع لازم برای ارتقا کافی نیست");return}empire.xp-=needXP();wood-=c[0];stone-=c[1];gold-=c[2];empire.level++;persistEmpire();drawEmpire();updateHud();saveGame(false);toast("پایتخت به سطح "+empire.level+" ارتقا یافت")}
 function campaignUI(){let st=document.createElement("style");st.textContent='#empireHud{position:fixed;top:75px;left:9px;width:180px;padding:9px;background:#10231eef;border:1px solid #d9b96b;border-radius:12px;font-size:10px;pointer-events:none;box-shadow:0 5px 18px #0008}#empireHud b{color:#f2d58b}.xpbar{height:6px;background:#ffffff25;border-radius:8px;overflow:hidden;margin:6px 0}.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#ad813a,#f5dc91)}#empireHud small{color:#e0e4d8}#campaignMenu{position:fixed;right:8px;top:300px;display:grid;gap:6px}#campaignMenu button{font-size:10px;padding:9px}#campaignPanel{display:none;position:fixed;z-index:30;inset:12% 4%;background:#10211ff7;border:1px solid #d9b96b;border-radius:16px;overflow:hidden;box-shadow:0 15px 50px #000b}#campaignPanel header{display:flex;justify-content:space-between;padding:12px;color:#f3d994;border-bottom:1px solid #d9b96b55}#campaignPanel section{height:calc(100% - 48px);overflow:auto;padding:10px;display:grid;align-content:start;gap:8px}#campaignPanel article{padding:10px;background:#ffffff0b;border:1px solid #ffffff20;border-radius:10px;display:grid;gap:5px}#campaignPanel small{font-size:10px;color:#d4d9cc}#campaignPanel em{color:#9fe0aa;font-style:normal}#campaignPanel button:disabled{opacity:.35}@media(max-width:420px){#empireHud{width:155px;font-size:9px}#campaignMenu{top:265px}#campaignMenu button{font-size:9px;padding:8px}}';document.head.appendChild(st);let h=document.createElement("div");h.id="empireHud";document.body.appendChild(h);let m=document.createElement("div");m.id="campaignMenu";m.innerHTML="<button id='missionsBtn'>📜 مأموریت‌ها</button><button id='armyBtn'>⚔️ ارتش</button><button id='beastBtn'>🦁 نگهبانان</button><button id='researchBtn'>📚 فناوری</button><button id='upgradeBtn'>⬆️ ارتقای پایتخت</button>";document.body.appendChild(m);let p=document.createElement("div");p.id="campaignPanel";document.body.appendChild(p);document.getElementById("missionsBtn").onclick=showMissions;document.getElementById("armyBtn").onclick=showArmy;document.getElementById("beastBtn").onclick=showBeastStable;document.getElementById("researchBtn").onclick=showResearch;document.getElementById("upgradeBtn").onclick=upgradeEmpire;drawEmpire()}
 campaignUI();
+let airRaidCountdown=85;
+setInterval(()=>{
+ for(let i=raiders.length-1;i>=0;i--){
+  const e=raiders[i];let beast=beasts.find(b=>Math.hypot(b.x-e.x,b.z-e.z)<2.2);
+  if(beast){beast.hp-=beast.damage*.45;raiders.splice(i,1);empireXP(8);continue}
+  if(Math.hypot(e.x-3,e.z-3)<2.5){empire.health=Math.max(0,empire.health-4);raiders.splice(i,1);toast("دشمن به حریم دهکده رسید؛ دفاع را تقویت کن")}
+ }
+ airRaidCountdown--;
+ if(airRaidCountdown<=0){aircraft.push({x:-24,z:Math.random()*14-7});airRaidCountdown=125;toast("هشدار هوایی: هواگرد ناشناس وارد منطقه شد")}
+ for(let i=aircraft.length-1;i>=0;i--){let p=aircraft[i];p.x+=.65;if(p.x>24){aircraft.splice(i,1);if(Math.random()<.55){empire.health=Math.max(0,empire.health-8);toast("حمله هوایی به حاشیه دهکده آسیب زد")}}}
+ beasts=beasts.filter(b=>b.hp>0);
+ if(beasts.length||aircraft.length)buildWorld();
+ drawEmpire();saveGame(false);
+},1000);
 const priorPlaceAt=placeAt;
 placeAt=function(x,y){let n=structures.length;priorPlaceAt(x,y);if(structures.length>n){empireXP(25);saveGame(false)}};
 const priorSaveGame=saveGame;
