@@ -12,6 +12,8 @@ public enum ResourceType
 [Serializable]
 public class ResourceAmounts
 {
+    private const int MaximumResourceAmount = 999999999;
+
     public int wood;
     public int stone;
     public int gold;
@@ -31,7 +33,7 @@ public class ResourceAmounts
 
     public void Set(ResourceType type, int value)
     {
-        value = Mathf.Max(0, value);
+        value = Mathf.Clamp(value, 0, MaximumResourceAmount);
         switch (type)
         {
             case ResourceType.Wood: wood = value; break;
@@ -43,7 +45,8 @@ public class ResourceAmounts
 
     public void Add(ResourceType type, int amount)
     {
-        Set(type, Get(type) + amount);
+        long total = (long)Get(type) + amount;
+        Set(type, (int)Math.Min(MaximumResourceAmount, Math.Max(0L, total)));
     }
 }
 
