@@ -91,7 +91,8 @@ public class ResourceInventory : MonoBehaviour
     public void Add(ResourceType type, int amount)
     {
         if (amount <= 0) return;
-        SetAmount(type, GetAmount(type) + amount);
+        amounts.Add(type, amount);
+        ResourceChanged?.Invoke(type, amounts.Get(type));
     }
 
     public ResourceAmounts CreateSnapshot()
