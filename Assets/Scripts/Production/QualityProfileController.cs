@@ -66,6 +66,9 @@ namespace AfghanistanOld.Settings
             QualityProfile profile = GetProfile(tier);
             int cascades = profile != null ? profile.shadowCascades : tier == GraphicsTier.Low ? 0 : 2;
             int antiAliasing = profile != null ? profile.antiAliasing : tier == GraphicsTier.High ? 4 : tier == GraphicsTier.Balanced ? 2 : 0;
+            antiAliasing = NormalizeAntiAliasing(antiAliasing);
+            if (cascades == 1) cascades = 2;
+            if (cascades == 3) cascades = 4;
             float lodBias = profile != null ? profile.lodBias : tier == GraphicsTier.High ? 1.8f : tier == GraphicsTier.Balanced ? 1.1f : .7f;
             float shadowDistance = profile != null ? profile.shadowDistance : tier == GraphicsTier.High ? 85f : tier == GraphicsTier.Balanced ? 48f : 22f;
             float renderScale = profile != null ? profile.renderScale : tier == GraphicsTier.High ? 1.1f : tier == GraphicsTier.Balanced ? 1f : .8f;
@@ -93,6 +96,14 @@ namespace AfghanistanOld.Settings
                 PlayerPrefs.SetInt(PreferenceKey, (int)tier);
                 PlayerPrefs.Save();
             }
+        }
+
+        private static int NormalizeAntiAliasing(int value)
+        {
+            if (value >= 8) return 8;
+            if (value >= 4) return 4;
+            if (value >= 2) return 2;
+            return 0;
         }
 
         private QualityProfile GetProfile(GraphicsTier tier)
