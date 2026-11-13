@@ -122,10 +122,61 @@ public sealed class PanjshirDefenseKit : MonoBehaviour
         return o;
     }
 
+    // Shared tileable surface maps add material breakup without allocating one
+    // texture per prop. This is still a blockout material pass, not final authored PBR.
     Material Mat(Color color)
     {
         Shader s=Shader.Find("Universal Render Pipeline/Lit");
         if(s==null) s=Shader.Find("Standard");
-        Material m=new Material(s); m.color=color; return m;
+        Material m=new Material(s);
+        m.color=Color.white;
+        Texture2D texture=BuildSurfaceTexture(color, SurfaceSeed(color), 128);
+        texture.name="Panjshir surface "+ColorUtility.ToHtmlStringRGB(color);
+        texture.wrapMode=TextureWrapMode.Repeat;
+        texture.filterMode=FilterMode.Bilinear;
+        if(m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap",texture);
+        if(m.HasProperty("_MainTex")) m.SetTexture("_MainTex",texture);
+        if(m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness",.12f);
+        if(m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness",.12f);
+        if(m.HasProperty("_Metallic")) m.SetFloat("_Metallic",.03f);
+        return m;
+    }
+
+    int SurfaceSeed(Color c)
+    {
+        return Mathf.RoundToInt(c.r*997f+c.g*313f+c.b*127f);
+    }
+
+    Texture2D BuildSurfaceTexture(Color baseColor,int seed,int resolution)
+    {
+        Texture2D tex=new Texture2D(resolution,resolution,TextureFormat.RGB24,false);
+        tex.anisoLevel=2;
+        // Deterministic hash noise keeps the same material stable between launches.
+        for(int y=0;y<resolution;y++)
+        for(int x=0;x<resolution;x++)
+        {
+            float broad=HashNoise(x/8,y/8,seed);
+            float fine=HashNoise(x,y,seed+71);
+            float grain=(broad-.5f)*.22f+(fine-.5f)*.16f;
+            float streak=0f;
+            if(baseColor.r<.35f && baseColor.g<.25f)
+                streak=(HashNoise(x/3,y/13,seed+19)-.5f)*.18f; // dark wood grain
+            float shade=Mathf.Clamp(1f+grain+streak,.72f,1.25f);
+            Color pixel=new Color(baseColor.r*shade,baseColor.g*shade,baseColor.b*shade,1f);
+            tex.SetPixel(x,y,pixel);
+        }
+        tex.Apply(false,true);
+        return tex;
+    }
+
+    float HashNoise(int x,int y,int seed)
+    {
+        unchecked
+        {
+            int n=x*374761393+y*668265263+seed*1442695041;
+            n=(n^(n>>13))*1274126177;
+            n^=n>>16;
+            return (n&0x7fffffff)/(float)int.MaxValue;
+        }
     }
 }
