@@ -90,6 +90,9 @@ public static class BuildingWorldSaveSystem
                 if (instance != null && instance.isPlayerPlaced)
                     UnityEngine.Object.Destroy(instance.gameObject);
 
+            // Track matched scene instances so two nearby starting towers (or
+            // other repeated structures) can never restore onto the same object.
+            HashSet<int> restoredStartingInstances = new HashSet<int>();
             foreach (PlacedBuildingRecord record in data.buildings)
             {
                 BuildingDefinition definition = BuildingCatalog.Get(record.definitionId);
@@ -103,7 +106,8 @@ public static class BuildingWorldSaveSystem
                     foreach (BuildingInstance candidate in startingBuildings)
                     {
                         if (candidate == null || candidate.isPlayerPlaced ||
-                            candidate.definitionId != record.definitionId) continue;
+                            candidate.definitionId != record.definitionId ||
+                            restoredStartingInstances.Contains(candidate.GetInstanceID())) continue;
                         float distance = (candidate.transform.position - record.position).sqrMagnitude;
                         if (distance < closestDistance)
                         {
@@ -111,7 +115,11 @@ public static class BuildingWorldSaveSystem
                             closest = candidate;
                         }
                     }
-                    if (closest != null) closest.RestoreLevel(record.level);
+                    if (closest != null)
+                    {
+                        closest.RestoreLevel(record.level);
+                        restoredStartingInstances.Add(closest.GetInstanceID());
+                    }
                     continue;
                 }
 
