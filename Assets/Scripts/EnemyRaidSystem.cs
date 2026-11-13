@@ -194,7 +194,7 @@ public class EnemyRaidSystem : MonoBehaviour
         GridBuildingSystem builder = GetComponent<GridBuildingSystem>();
         if (builder != null && builder.IsBuildMode) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
-        GUI.Box(new Rect(12, 400, 300, 104),
+        GUI.Box(new Rect(12, 400, 390, 104),
             "دفاع از دهکده | سلامت: " + villageHealth + "%\n" +
             (villageActiveLabel()) + "\n" + status);
         if (GUI.Button(new Rect(18, 510, 180, 34), "آموزش نگهبان"))
