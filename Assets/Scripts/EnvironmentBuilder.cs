@@ -86,17 +86,17 @@ public class EnvironmentBuilder : MonoBehaviour
 
     private void BuildVillageCenter()
     {
-        BuildHouse("ارگ مرکزی", new Vector3(3f, .55f, 3f), 5.6f, 3.2f, 5.2f, new Color(.72f, .61f, .45f), true);
-        BuildHouse("خانه کاهگلی", new Vector3(8f, .45f, -4f), 3.3f, 2.1f, 3.2f, new Color(.65f, .45f, .3f), false);
-        BuildHouse("انبار غله", new Vector3(8f, .45f, 3f), 3.5f, 2.2f, 3.5f, new Color(.55f, .4f, .28f), false);
-        BuildHouse("سربازخانه", new Vector3(-2f, .5f, -5f), 4.4f, 2.5f, 3.7f, new Color(.52f, .38f, .29f), false);
-        BuildHouse("کارگاه آهنگری", new Vector3(13f, .4f, 8f), 3.5f, 2f, 3f, new Color(.48f, .38f, .3f), false);
+        BuildHouse("ارگ مرکزی", new Vector3(3f, .55f, 3f), 5.6f, 3.2f, 5.2f, new Color(.72f, .61f, .45f), true, 10);
+        BuildHouse("خانه کاهگلی", new Vector3(8f, .45f, -4f), 3.3f, 2.1f, 3.2f, new Color(.65f, .45f, .3f), false, 1);
+        BuildHouse("انبار غله", new Vector3(8f, .45f, 3f), 3.5f, 2.2f, 3.5f, new Color(.55f, .4f, .28f), false, 2);
+        BuildHouse("سربازخانه", new Vector3(-2f, .5f, -5f), 4.4f, 2.5f, 3.7f, new Color(.52f, .38f, .29f), false, 3);
+        BuildHouse("زرادخانه", new Vector3(13f, .4f, 8f), 3.5f, 2f, 3f, new Color(.48f, .38f, .3f), false, 11);
         BuildWatchtower(new Vector3(-7f, .3f, -9f));
         BuildWatchtower(new Vector3(15f, .3f, -12f));
         BuildWall(new Vector3(2f, .55f, -12f), 25f, 1.7f);
     }
 
-    private void BuildHouse(string title, Vector3 basePosition, float width, float height, float depth, Color wallColor, bool grand)
+    private void BuildHouse(string title, Vector3 basePosition, float width, float height, float depth, Color wallColor, bool grand, int definitionId)
     {
         Transform house = NewGroup(title, basePosition);
         MakeChild(house, "دیوارهای خشتی", PrimitiveType.Cube, new Vector3(0f, height * .5f, 0f),
@@ -122,6 +122,7 @@ public class EnvironmentBuilder : MonoBehaviour
                     new Vector3(i * width * .42f, height + .55f, j * depth * .42f),
                     new Vector3(.65f, .8f, .65f), new Color(.61f, .49f, .35f));
         }
+        RegisterUpgradeable(house, definitionId, new Vector3(width, height + 1.2f, depth));
     }
 
     private void BuildWatchtower(Vector3 position)
@@ -133,18 +134,36 @@ public class EnvironmentBuilder : MonoBehaviour
             new Vector3(2f, 1.2f, 2f), new Color(.68f, .57f, .42f));
         MakeChild(tower, "سقف برج", PrimitiveType.Cylinder, new Vector3(0f, 3.8f, 0f),
             new Vector3(2.35f, .28f, 2.35f), new Color(.32f, .2f, .14f));
+        RegisterUpgradeable(tower, 4, new Vector3(2.5f, 4.4f, 2.5f));
+        tower.gameObject.AddComponent<WatchtowerDefense>();
     }
 
     private void BuildWall(Vector3 center, float length, float height)
     {
+        Transform wall = NewGroup("دیوار دفاعی خشتی", center);
         for (int i = 0; i < 13; i++)
         {
-            float x = center.x - length * .5f + i * length / 12f;
-            Make("دیوار دفاعی خشتی", PrimitiveType.Cube, new Vector3(x, center.y + height * .5f, center.z),
-                new Vector3(1.9f, height, .85f), null, new Color(.56f, .46f, .34f));
-            Make("کنگره دیوار", PrimitiveType.Cube, new Vector3(x, center.y + height + .18f, center.z),
-                new Vector3(.55f, .35f, .9f), null, new Color(.56f, .46f, .34f));
+            float x = -length * .5f + i * length / 12f;
+            MakeChild(wall, "بخش دیوار", PrimitiveType.Cube,
+                new Vector3(x, height * .5f, 0f),
+                new Vector3(1.9f, height, .85f), new Color(.56f, .46f, .34f));
+            MakeChild(wall, "کنگره دیوار", PrimitiveType.Cube,
+                new Vector3(x, height + .18f, 0f),
+                new Vector3(.55f, .35f, .9f), new Color(.56f, .46f, .34f));
         }
+        RegisterUpgradeable(wall, 5, new Vector3(length + 1f, height + .5f, 1.2f));
+    }
+
+    private void RegisterUpgradeable(Transform rootTransform, int definitionId, Vector3 colliderSize)
+    {
+        BuildingDefinition definition = BuildingCatalog.Get(definitionId);
+        if (definition == null) return;
+        BoxCollider hitArea = rootTransform.gameObject.AddComponent<BoxCollider>();
+        hitArea.center = new Vector3(0f, colliderSize.y * .5f, 0f);
+        hitArea.size = colliderSize;
+        BuildingInstance instance = rootTransform.gameObject.AddComponent<BuildingInstance>();
+        instance.Initialize(definition);
+        instance.isPlayerPlaced = false;
     }
 
     private void BuildFields()
