@@ -44,8 +44,9 @@ public class GridBuildingSystem : MonoBehaviour
 
     private bool IsBuildUiPosition(Vector2 screenPosition)
     {
-        float guiY = Screen.height - screenPosition.y;
-        return screenPosition.x < 430f &&
+        Vector2 logical = MobileUiLayout.ToLogicalScreenPosition(screenPosition);
+        float guiY = (Screen.height / MobileUiLayout.Scale) - logical.y;
+        return logical.x < 430f &&
                (guiY < 200f || (guiY > 350f && guiY < 510f));
     }
 
@@ -114,6 +115,7 @@ public class GridBuildingSystem : MonoBehaviour
 
     private void OnGUI()
     {
+        Matrix4x4 previousMatrix = MobileUiLayout.Begin();
         GUI.Box(new Rect(12, 12, 390, 132),
             "افغانستان قدیم | ساخت‌وساز دهکده\n" +
             "رایانه: WASD حرکت، راست‌کلیک چرخش، چرخ ماوس زوم\n" +
@@ -145,5 +147,7 @@ public class GridBuildingSystem : MonoBehaviour
                     selected.Cost.food + " غذا");
             }
         }
+    
+        MobileUiLayout.End(previousMatrix);
     }
 }
