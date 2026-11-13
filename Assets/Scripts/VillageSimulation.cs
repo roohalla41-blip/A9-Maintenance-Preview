@@ -3,42 +3,66 @@ using UnityEngine;
 public class VillageSimulation : MonoBehaviour
 {
     public static VillageSimulation Instance { get; private set; }
-    public int wood = 120;
-    public int stone = 80;
-    public int food = 150;
-    public int population = 7;
-    public int soldiers = 2;
+
+    [Min(1)] public int population = 7;
+    [Min(0)] public int soldiers = 2;
+
+    public ResourceInventory Inventory { get; private set; }
+
+    public int wood { get { return Inventory != null ? Inventory.GetAmount(ResourceType.Wood) : 0; } }
+    public int stone { get { return Inventory != null ? Inventory.GetAmount(ResourceType.Stone) : 0; } }
+    public int food { get { return Inventory != null ? Inventory.GetAmount(ResourceType.Food) : 0; } }
+
+    [Min(1f)] public float productionInterval = 12f;
     private float productionTimer;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
+        Inventory = GetComponent<ResourceInventory>();
+        if (Inventory == null)
+            Inventory = gameObject.AddComponent<ResourceInventory>();
     }
 
     private void Start()
     {
+        // Restore the previous offline session when a save exists.
+        if (GameSaveSystem.HasSave())
+            GameSaveSystem.Load(Inventory);
+
         SpawnPeople(population, soldiers);
     }
 
     private void Update()
     {
         productionTimer += Time.deltaTime;
-        if (productionTimer >= 12f)
+        if (productionTimer >= productionInterval)
         {
             productionTimer = 0f;
-            food += Mathf.Max(1, population / 3);
-            wood += 1;
+            Inventory.Add(ResourceType.Food, Mathf.Max(1, population / 3));
+            Inventory.Add(ResourceType.Wood, 1);
         }
     }
 
+    // Kept as the shared economy API so building and defense scripts use
+    // the same inventory instead of maintaining a second set of resources.
     public bool TrySpend(int woodCost, int stoneCost, int foodCost)
     {
-        if (wood < woodCost || stone < stoneCost || food < foodCost) return false;
-        wood -= woodCost;
-        stone -= stoneCost;
-        food -= foodCost;
-        return true;
+        if (Inventory == null) return false;
+
+        ResourceAmounts cost = new ResourceAmounts
+        {
+            wood = Mathf.Max(0, woodCost),
+            stone = Mathf.Max(0, stoneCost),
+            food = Mathf.Max(0, foodCost)
+        };
+        return Inventory.TrySpend(cost);
     }
 
     private void SpawnPeople(int citizenCount, int soldierCount)
@@ -64,13 +88,36 @@ public class VillageSimulation : MonoBehaviour
 
     private void OnGUI()
     {
+        if (Inventory == null) return;
+
         GUI.Box(new Rect(12, 132, 300, 112),
-            "منابع دهکده\nچوب: " + wood + "   سنگ: " + stone + "   غذا: " + food +
+            "منابع دهکده" +
+            "\nچوب: " + wood + "   سنگ: " + stone + "   غذا: " + food +
             "\nجمعیت: " + population + "   نگهبانان: " + soldiers +
-            "\nتولید خودکار: هر ۱۲ ثانیه");
-        if (GUI.Button(new Rect(18, 250, 90, 34), "جمع‌آوری چوب +10")) wood += 10;
-        if (GUI.Button(new Rect(114, 250, 90, 34), "جمع‌آوری سنگ +10")) stone += 10;
-        if (GUI.Button(new Rect(210, 250, 90, 34), "برداشت غذا +10")) food += 10;
+            "\nتولید خودکار: هر " + productionInterval.ToString("0") + " ثانیه");
+
+        if (GUI.Button(new Rect(18, 250, 90, 34), "جمع‌آوری چوب +10"))
+            Inventory.Add(ResourceType.Wood, 10);
+        if (GUI.Button(new Rect(114, 250, 90, 34), "جمع‌آوری سنگ +10"))
+            Inventory.Add(ResourceType.Stone, 10);
+        if (GUI.Button(new Rect(210, 250, 90, 34), "برداشت غذا +10"))
+            Inventory.Add(ResourceType.Food, 10);
+
+        if (GUI.Button(new Rect(18, 288, 132, 32), "ذخیره بازی"))
+        {
+            if (GameSaveSystem.Save(Inventory))
+                Debug.Log("بازی افغانستان قدیم ذخیره شد.");
+        }
+        if (GUI.Button(new Rect(158, 288, 132, 32), "بارگذاری بازی"))
+        {
+            if (!GameSaveSystem.Load(Inventory))
+                Debug.LogWarning("ذخیره معتبری برای بارگذاری پیدا نشد.");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 }
 
