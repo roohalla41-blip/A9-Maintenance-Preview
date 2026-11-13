@@ -5,6 +5,7 @@ public sealed class BuildingDefinition
     public readonly int Id;
     public readonly string DisplayName;
     public readonly Vector3 Footprint;
+    public readonly Vector3 WorldScale;
     public readonly ResourceAmounts Cost;
     public readonly Color Color;
     public readonly PrimitiveType Shape;
@@ -15,6 +16,10 @@ public sealed class BuildingDefinition
         Id = id;
         DisplayName = displayName;
         Footprint = footprint;
+        // Unity's built-in cylinder primitive is two units tall by default.
+        WorldScale = new Vector3(footprint.x,
+            shape == PrimitiveType.Cylinder ? footprint.y * .5f : footprint.y,
+            footprint.z);
         Cost = new ResourceAmounts { wood = wood, stone = stone, food = food };
         Color = color;
         Shape = shape;
