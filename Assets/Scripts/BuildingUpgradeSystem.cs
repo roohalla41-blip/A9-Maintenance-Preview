@@ -80,7 +80,14 @@ public class BuildingUpgradeSystem : MonoBehaviour
             {
                 if (selected != null && village != null &&
                     selected.TryUpgrade(village.Inventory))
+                {
+                    LocalSaveCoordinator coordinator = FindObjectOfType<LocalSaveCoordinator>();
+                    if (coordinator != null) coordinator.SaveAll();
+                    else if (!BuildingWorldSaveSystem.Save(out string saveError) &&
+                             !string.IsNullOrEmpty(saveError))
+                        Debug.LogWarning("Upgraded building could not be saved: " + saveError);
                     Debug.Log("ساختمان با موفقیت ارتقا یافت.");
+                }
             }
             GUI.enabled = true;
         }
