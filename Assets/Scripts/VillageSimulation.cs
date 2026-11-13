@@ -13,6 +13,7 @@ public class VillageSimulation : MonoBehaviour
 
     public int wood { get { return Inventory != null ? Inventory.GetAmount(ResourceType.Wood) : 0; } }
     public int stone { get { return Inventory != null ? Inventory.GetAmount(ResourceType.Stone) : 0; } }
+    public int gold { get { return Inventory != null ? Inventory.GetAmount(ResourceType.Gold) : 0; } }
     public int food { get { return Inventory != null ? Inventory.GetAmount(ResourceType.Food) : 0; } }
 
     [Min(1f)] public float productionInterval = 12f;
@@ -187,9 +188,9 @@ public class VillageSimulation : MonoBehaviour
         if (Inventory == null) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
 
-        GUI.Box(new Rect(12, 190, 300, 112),
+        GUI.Box(new Rect(12, 190, 390, 112),
             "منابع دهکده" +
-            "\nچوب: " + wood + "   سنگ: " + stone + "   غذا: " + food +
+            "\nچوب: " + wood + "   سنگ: " + stone + "   طلا: " + gold + "   غذا: " + food +
             "\nجمعیت: " + population + "   نگهبانان: " + soldiers +
             "\nتولید خودکار: هر " + productionInterval.ToString("0") + " ثانیه");
 
