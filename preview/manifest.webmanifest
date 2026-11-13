@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "افغانستان قدیم",
+  "short_name": "افغانستان قدیم",
+  "description": "پیش‌نمایش تعاملی اسکلت بازی افغانستان قدیم",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101b1b",
+  "theme_color": "#172b2b",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
