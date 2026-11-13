@@ -49,7 +49,9 @@ public static class BuildingCatalog
         new BuildingDefinition(9, "کارگاه محاصره", new Vector3(5f, 3f, 4f), 260, 190, 150,
             new Color(.42f, .34f, .28f), PrimitiveType.Cube),
         new BuildingDefinition(10, "کاخ بزرگ", new Vector3(7f, 6f, 7f), 420, 380, 260,
-            new Color(.72f, .57f, .29f), PrimitiveType.Cube)
+            new Color(.72f, .57f, .29f), PrimitiveType.Cube),
+        new BuildingDefinition(11, "زرادخانه", new Vector3(4.2f, 2.8f, 3.8f), 150, 125, 75,
+            new Color(.38f, .39f, .43f), PrimitiveType.Cube)
     };
 
     public static int Count { get { return Definitions.Length; } }
@@ -101,13 +103,19 @@ public class BuildingInstance : MonoBehaviour
     public bool TryUpgrade(ResourceInventory inventory)
     {
         if (inventory == null || level >= MaximumLevel) return false;
+        EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
+        int capitalLevel = progression != null ? progression.CapitalLevel : 1;
+        if (BuildingProgressionRules.GetBuildingUpgradeRequirement(
+            definitionId, level + 1, capitalLevel) != null) return false;
         ResourceAmounts cost = GetUpgradeCost();
         if (cost == null || !inventory.TrySpend(cost)) return false;
 
         level++;
-        transform.localScale = baseScale * (1f + (level - 1) * 0.06f);
+        // Higher tiers visibly reinforce the existing structure instead of replacing it.
+        float tierScale = 1f + (level - 1) * 0.075f;
+        transform.localScale = baseScale * tierScale;
         if (cachedRenderer != null)
-            cachedRenderer.material.color = Color.Lerp(baseColor, Color.white, (level - 1) * 0.08f);
+            cachedRenderer.material.color = Color.Lerp(baseColor, Color.white, (level - 1) * 0.12f);
         gameObject.name = DisplayName + " (سطح " + level + ")";
         return true;
     }
