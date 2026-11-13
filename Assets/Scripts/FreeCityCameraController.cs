@@ -36,6 +36,7 @@ public sealed class FreeCityCameraController : MonoBehaviour
     private Vector2 previousPinchCenter;
     private float previousPinchDistance;
     private bool initialized;
+    private bool singleTouchStartedOverHud;
 
     public void SetInitialView(Vector3 lookAt, float startDistance, float startPitch, float startYaw)
     {
@@ -81,11 +82,16 @@ public sealed class FreeCityCameraController : MonoBehaviour
         {
             Touch touch = Input.GetTouch(0);
             if (touch.phase == TouchPhase.Began)
+            {
                 previousTouch = touch.position;
+                singleTouchStartedOverHud = MobileUiLayout.IsHudPosition(touch.position);
+            }
             else if (touch.phase == TouchPhase.Moved)
             {
                 Vector2 delta = touch.position - previousTouch;
-                if (!IsTouchOverUi(touch.fingerId))
+                if (!singleTouchStartedOverHud &&
+                    !MobileUiLayout.IsHudPosition(touch.position) &&
+                    !IsTouchOverUi(touch.fingerId))
                 {
                     yaw += delta.x * rotateSpeed;
                     pitch = Mathf.Clamp(pitch - delta.y * rotateSpeed * 0.7f, minPitch, maxPitch);
@@ -100,6 +106,12 @@ public sealed class FreeCityCameraController : MonoBehaviour
         {
             Touch a = Input.GetTouch(0);
             Touch b = Input.GetTouch(1);
+            if (MobileUiLayout.IsHudPosition(a.position) ||
+                MobileUiLayout.IsHudPosition(b.position))
+            {
+                previousPinchDistance = 0f;
+                return;
+            }
             Vector2 center = (a.position + b.position) * 0.5f;
             float pinch = Vector2.Distance(a.position, b.position);
 
