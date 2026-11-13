@@ -126,8 +126,11 @@ public sealed class PanjshirDefenseKit : MonoBehaviour
     // texture per prop. This is still a blockout material pass, not final authored PBR.
     Material Mat(Color color)
     {
-        Shader s=Shader.Find("Universal Render Pipeline/Lit");
-        if(s==null) s=Shader.Find("Standard");
+        bool usingScriptablePipeline = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null;
+        Shader s = usingScriptablePipeline
+            ? Shader.Find("Universal Render Pipeline/Lit")
+            : Shader.Find("Standard");
+        if(s==null) s=Shader.Find("Universal Render Pipeline/Lit");
         Material m=new Material(s);
         m.color=Color.white;
         Texture2D texture=BuildSurfaceTexture(color, SurfaceSeed(color), 128);
