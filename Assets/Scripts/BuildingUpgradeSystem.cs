@@ -35,8 +35,10 @@ public class BuildingUpgradeSystem : MonoBehaviour
 
     private bool IsUpgradeUiPosition(Vector2 position)
     {
-        float guiY = Screen.height - position.y;
-        return position.x < 430f && guiY > Screen.height - 125f;
+        Vector2 logical = MobileUiLayout.ToLogicalScreenPosition(position);
+        float logicalHeight = Screen.height / MobileUiLayout.Scale;
+        float guiY = logicalHeight - logical.y;
+        return logical.x < 430f && guiY > logicalHeight - 125f;
     }
 
     private void SelectAt(Vector2 screenPosition)
@@ -57,6 +59,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
 
     private void OnGUI()
     {
+        Matrix4x4 previousMatrix = MobileUiLayout.Begin();
         if (selected == null) return;
 
         float y = Screen.height - 116f;
@@ -94,5 +97,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
 
         if (GUI.Button(new Rect(202f, y + 57f, 170f, 32f), "بستن انتخاب"))
             selected = null;
+    
+        MobileUiLayout.End(previousMatrix);
     }
 }
