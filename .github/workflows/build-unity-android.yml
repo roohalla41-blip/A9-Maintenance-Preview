@@ -14,6 +14,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: unity-android-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-android:
     name: Compile Unity project and package Android APK
@@ -45,16 +49,33 @@ jobs:
           androidAppBundle: false
           allowDirtyBuild: true
 
-      - name: Verify APK output
+      - name: Verify APK and create build manifest
         run: |
-          test -s Builds/Android/AncientAfghanistan.apk
-          ls -lh Builds/Android/AncientAfghanistan.apk
-          file Builds/Android/AncientAfghanistan.apk
+          APK="Builds/Android/AncientAfghanistan.apk"
+          test -s "$APK"
+          mkdir -p Builds/Android
+          sha256sum "$APK" | tee Builds/Android/AncientAfghanistan.apk.sha256
+          cat > Builds/Android/build-info.txt <<EOF
+          Game: Afghanistan Old
+          Build type: Unity Android APK
+          Unity version: 2022.3.62f1
+          Branch: ${GITHUB_REF_NAME}
+          Commit: ${GITHUB_SHA}
+          Package: com.ancientafghanistan.game
+          Version: 0.1.0 (1)
+          Architecture: ARM64
+          APK bytes: $(stat -c%s "$APK")
+          EOF
+          ls -lh "$APK" Builds/Android/AncientAfghanistan.apk.sha256 Builds/Android/build-info.txt
+          file "$APK"
 
-      - name: Upload installable Unity APK
+      - name: Upload installable Unity APK and verification files
         uses: actions/upload-artifact@v4
         with:
           name: Afghanistan-Old-Unity-Android-APK
-          path: Builds/Android/AncientAfghanistan.apk
+          path: |
+            Builds/Android/AncientAfghanistan.apk
+            Builds/Android/AncientAfghanistan.apk.sha256
+            Builds/Android/build-info.txt
           if-no-files-found: error
           retention-days: 14
