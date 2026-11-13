@@ -17,6 +17,9 @@ public class EnvironmentBuilder : MonoBehaviour
         BuildRiver(waterMat);
         BuildRoads();
         BuildVillageCenter();
+        // Add Panjshir-inspired defensive locations to the environment.
+        if (GetComponent<PanjshirDefenseKit>() == null)
+            gameObject.AddComponent<PanjshirDefenseKit>().Build(root);
         BuildFields();
         BuildTreesAndRocks();
         BuildLighting();
