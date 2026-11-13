@@ -184,7 +184,17 @@ public class VillageSimulation : MonoBehaviour
             if (soldier)
             {
                 walker.enabled = false;
-                person.AddComponent<VillageGuard>();
+                VillageGuard guard = person.AddComponent<VillageGuard>();
+                EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
+                int capitalLevel = progression != null ? progression.CapitalLevel : 1;
+                int armyTier = BuildingProgressionRules.GetArmyTier(capitalLevel);
+                BuildingInstance[] buildings = FindObjectsOfType<BuildingInstance>();
+                int barracksLevel = 1;
+                foreach (BuildingInstance building in buildings)
+                    if (building != null && building.definitionId == 3)
+                        barracksLevel = Mathf.Max(barracksLevel, building.level);
+                guard.attackDamage = 8f + armyTier * 5f + (barracksLevel - 1) * 2.5f;
+                guard.moveSpeed = 2.8f + armyTier * .25f + (barracksLevel - 1) * .08f;
             }
         }
     }
