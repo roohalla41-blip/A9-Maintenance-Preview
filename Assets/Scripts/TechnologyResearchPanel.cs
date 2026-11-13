@@ -91,6 +91,11 @@ public sealed class TechnologyResearchPanel : MonoBehaviour
         MobileUiLayout.End(previousMatrix);
     }
 
+    private void OnDisable()
+    {
+        IsOpen = false;
+    }
+
     public static void Close()
     {
         IsOpen = false;
