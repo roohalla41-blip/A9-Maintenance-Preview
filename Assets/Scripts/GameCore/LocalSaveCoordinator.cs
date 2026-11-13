@@ -49,6 +49,12 @@ public sealed class LocalSaveCoordinator : MonoBehaviour
 
         if (inventory != null && !GameSaveSystem.Save(inventory))
             Debug.LogWarning("Local resource save did not complete.");
+
+        // Keep population and trained guards in sync with resources/buildings
+        // during autosave, app pause, focus loss, and shutdown.
+        VillageSimulation village = VillageSimulation.Instance;
+        if (village != null && !village.SaveRoster())
+            Debug.LogWarning("Local village roster save did not complete.");
         if (progression != null)
             progression.Save();
         if (!BuildingWorldSaveSystem.Save(out string buildingError) && !string.IsNullOrEmpty(buildingError))
