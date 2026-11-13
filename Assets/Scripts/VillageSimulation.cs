@@ -185,7 +185,7 @@ public class VillageSimulation : MonoBehaviour
 
     private void OnGUI()
     {
-        if (Inventory == null) return;
+        if (TechnologyResearchPanel.IsOpen || Inventory == null) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
 
         GUI.Box(new Rect(12, 190, 390, 112),
