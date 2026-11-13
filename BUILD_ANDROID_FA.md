@@ -6,6 +6,7 @@
 - Workflow: `.github/workflows/build-unity-android.yml`
 - نقطه ورود ساخت: `Assets/Editor/AncientAfghanistanBuild.cs`
 - خروجی مورد انتظار: `Builds/Android/AncientAfghanistan.apk`
+- فایل‌های کنترل صحت: `AncientAfghanistan.apk.sha256` و `build-info.txt` همراه APK در Artifact قرار می‌گیرند.
 - معماری خروجی: Android ARM64، فرمت APK، حالت افقی
 - صحنه نمونه در صورت نبودن، هنگام Build به‌صورت خودکار ایجاد می‌شود.
 
