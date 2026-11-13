@@ -116,7 +116,34 @@ function sphere(x,y,z,r,color){let n=7,m=10;for(let j=0;j<n;j++)for(let i=0;i<m;
 function roof(x,y,z,w,d,color){let a=[x-w/2,y,z-d/2],b=[x+w/2,y,z-d/2],c=[x+w/2,y,z+d/2],e=[x-w/2,y,z+d/2],top=[x,y+Math.min(w,d)*.34,z];tri(a,b,top,color);tri(b,c,top,color);tri(c,e,top,color);tri(e,a,top,color)}
 function terrain(){let n=34,size=52,step=size/n;for(let z=0;z<n;z++)for(let x=0;x<n;x++){let xx=-26+x*step,zz=-26+z*step,h=(a,b)=>Math.sin(a*.23)*.22+Math.cos(b*.19)*.18+Math.sin((a+b)*.11)*.12;quad([xx,h(xx,zz),zz],[xx+step,h(xx+step,zz),zz],[xx+step,h(xx+step,zz+step),zz+step],[xx,h(xx,zz+step),zz+step],((x+z)%3===0)?"#716c43":"#777148")}}
 let structures=[{kind:"tower-archer",x:-7,z:-9,hp:180,maxHp:180},{kind:"tower-sentinel",x:15,z:-12,hp:200,maxHp:200}],people=[],raiders=[],beasts=[],aircraft=[],wood=250,stone=150,food=200,gold=100,guards=2,buildMode=false,selected="house",raidTimer=45,raidNo=0;
-function addHouse(x,z,scale=1,color="#b58c5d"){box(x,1*scale,z,3.2*scale,2*scale,3*scale,color);roof(x,2*scale,z,3.6*scale,3.4*scale,"#67442d");box(x,.72*scale,z-1.56*scale,.65*scale,1.42*scale,.12*scale,"#50301e")}
+function addHouse(x,z,scale=1,color="#b58c5d"){
+ const s=scale,wall=color;
+ // Raised stone footing and thick earthen walls.
+ box(x,.18*s,z,3.5*s, .34*s,3.35*s,"#75634d");
+ box(x,1.12*s,z,3.2*s,1.92*s,3*s,wall);
+ // Flat timber roof with earthen parapet, characteristic of mountain villages.
+ box(x,2.13*s,z,3.62*s,.18*s,3.38*s,"#59412d");
+ box(x,2.36*s,z-1.52*s,3.55*s,.48*s,.22*s,"#9b7952");
+ box(x,2.36*s,z+1.52*s,3.55*s,.48*s,.22*s,"#9b7952");
+ box(x-1.67*s,2.36*s,z,.22*s,.48*s,3.05*s,"#9b7952");
+ box(x+1.67*s,2.36*s,z,.22*s,.48*s,3.05*s,"#9b7952");
+ // Exposed dark beams and corner posts.
+ for(const dx of [-1.48,1.48]){box(x+dx*s,1.16*s,z-1.53*s,.13*s,1.9*s,.13*s,"#60432d");box(x+dx*s,1.16*s,z+1.53*s,.13*s,1.9*s,.13*s,"#60432d")}
+ box(x,1.91*s,z-1.55*s,3.05*s,.12*s,.1*s,"#65452f");
+ // Recessed doorway, lintel and small shaded windows.
+ box(x,.76*s,z-1.565*s,.68*s,1.42*s,.12*s,"#493323");
+ box(x,.75*s,z-1.64*s,.48*s,1.16*s,.035*s,"#795438");
+ box(x,.16*s,z-1.68*s,.82*s,.12*s,.18*s,"#c2a176");
+ for(const dx of [-1.02,1.02]){
+   box(x+dx*s,1.28*s,z-1.56*s,.48*s,.55*s,.09*s,"#493b2d");
+   box(x+dx*s,1.28*s,z-1.62*s,.31*s,.37*s,.035*s,"#283b3a");
+   box(x+dx*s,1.28*s,z-1.65*s,.06*s,.4*s,.04*s,"#b18b5c");
+ }
+ // Roof access hatch and a low chimney.
+ box(x+.92*s,2.28*s,z+.7*s,.58*s,.14*s,.62*s,"#6c5139");
+ box(x-.95*s,2.52*s,z+.55*s,.38*s,.65*s,.42*s,"#987b58");
+ box(x-.95*s,2.88*s,z+.55*s,.48*s,.12*s,.5*s,"#554333");
+}
 function addTower(x,z,kind="tower-archer"){const palette={ "tower-archer":["#3f8b75","#a8d9bd","#e1c77b"],"tower-cannon":["#8c5834","#d7a35b","#39464a"],"tower-sentinel":["#64727d","#c7d2d5","#e7d29b"],"tower-arcane":["#4f5ca0","#b8c8ff","#83d9ef"],"tower":["#3f8b75","#a8d9bd","#e1c77b"]}[kind]||["#3f8b75","#a8d9bd","#e1c77b"];const [base,trim,glow]=palette;cylinder(x,1.5,z,.95,3,base,12);cylinder(x,3.05,z,1.04,.22,trim,12);if(kind==="tower-cannon"){box(x,3.55,z,2.1,.95,2.1,base);cylinder(x,4.05,z,.46,.45,trim,12);cylinder(x,4.28,z,.19,1.05,"#303c40",10);cylinder(x,3.1,z,1.17,.18,glow,12)}else if(kind==="tower-sentinel"){box(x,3.5,z,2.25,1.15,2.25,base);for(let i=0;i<4;i++){let a=i*Math.PI/2;cylinder(x+Math.cos(a)*.83,4.25,z+Math.sin(a)*.83,.19,.75,trim,8)}box(x,4.08,z,.32,.65,.32,glow)}else if(kind==="tower-arcane"){cylinder(x,3.65,z,.72,1.1,base,9);cylinder(x,4.28,z,.28,.25,glow,9);sphere(x,4.75,z,.42,glow);for(let i=0;i<4;i++){let a=i*Math.PI/2;cylinder(x+Math.cos(a)*.72,3.75,z+Math.sin(a)*.72,.12,1.2,trim,7)}}else{box(x,3.45,z,2.1,1,2.1,base);for(let i=0;i<4;i++){let a=i*Math.PI/2;cylinder(x+Math.cos(a)*.68,4.08,z+Math.sin(a)*.68,.16,.65,trim,8)}cylinder(x,4.05,z,.24,.45,glow,8)}}
 function addTree(x,z){cylinder(x,.75,z,.22,1.5,"#68452a",7);sphere(x,2,z,.95,"#456b38")}
 function addQala(x,z,w=7,d=6){const wall="#a78b65";box(x,1.15,z-d/2,w,2.3,.45,wall);box(x,1.15,z+d/2,w,2.3,.45,wall);box(x-w/2,1.15,z,.45,2.3,d,wall);box(x+w/2,1.15,z,.45,2.3,d,wall);box(x,1.0,z+d/2,.9,1.65,.5,"#64452f");for(const [dx,dz] of [[-w/2,-d/2],[w/2,-d/2],[-w/2,d/2],[w/2,d/2]]){box(x+dx,2.55,z+dz,.8,.55,.8,"#b69a72");box(x+dx,2.9,z+dz,.35,.2,.35,"#8a704e")}}
