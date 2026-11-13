@@ -62,7 +62,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
         if (selected == null) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
 
-        float y = Screen.height - 116f;
+        float y = (Screen.height / MobileUiLayout.Scale) - 116f;
         ResourceAmounts cost = selected.GetUpgradeCost();
         string title = selected.DisplayName + " | سطح " + selected.level + "/" + BuildingInstance.MaximumLevel;
 
