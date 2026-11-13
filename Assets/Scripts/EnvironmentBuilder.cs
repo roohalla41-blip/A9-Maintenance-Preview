@@ -271,8 +271,11 @@ public class EnvironmentBuilder : MonoBehaviour
         if (materialCache.TryGetValue(key, out Material cached) && cached != null)
             return cached;
 
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null) shader = Shader.Find("Standard");
+        bool usingScriptablePipeline = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null;
+        Shader shader = usingScriptablePipeline
+            ? Shader.Find("Universal Render Pipeline/Lit")
+            : Shader.Find("Standard");
+        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
         if (shader == null) shader = Shader.Find("Unlit/Color");
         Material material = new Material(shader);
         if (material.HasProperty("_BaseColor"))
