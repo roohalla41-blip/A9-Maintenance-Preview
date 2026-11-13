@@ -60,6 +60,10 @@ public class BuildingUpgradeSystem : MonoBehaviour
         float y = (Screen.height / MobileUiLayout.Scale) - 116f;
         ResourceAmounts cost = selected.GetUpgradeCost();
         string title = selected.DisplayName + " | سطح " + selected.level + "/" + BuildingInstance.MaximumLevel;
+        EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
+        string requirement = BuildingProgressionRules.GetBuildingUpgradeRequirement(
+            selected.definitionId, selected.level + 1,
+            progression != null ? progression.CapitalLevel : 1);
 
         GUI.Box(new Rect(12f, y, 390f, 104f), title);
         if (cost == null)
@@ -68,12 +72,14 @@ public class BuildingUpgradeSystem : MonoBehaviour
         }
         else
         {
-            GUI.Label(new Rect(22f, y + 27f, 365f, 24f),
-                "هزینه ارتقا: " + cost.wood + " چوب، " + cost.stone + " سنگ، " + cost.food + " غذا");
+            GUI.Label(new Rect(22f, y + 25f, 365f, 22f),
+                "هزینه: " + cost.wood + " چوب، " + cost.stone + " سنگ، " + cost.food + " غذا");
             VillageSimulation village = VillageSimulation.Instance;
             bool canAfford = village != null && village.Inventory != null &&
                 village.Inventory.HasEnough(cost);
-            GUI.enabled = canAfford;
+            GUI.enabled = canAfford && string.IsNullOrEmpty(requirement);
+            if (!string.IsNullOrEmpty(requirement))
+                GUI.Label(new Rect(22f, y + 45f, 365f, 18f), requirement);
             if (GUI.Button(new Rect(22f, y + 57f, 170f, 32f), "ارتقای ساختمان"))
             {
                 if (selected != null && village != null &&
