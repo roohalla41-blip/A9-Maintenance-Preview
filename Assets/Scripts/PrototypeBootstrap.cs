@@ -11,13 +11,18 @@ public class PrototypeBootstrap : MonoBehaviour
         if (FindObjectOfType<EnvironmentBuilder>() == null)
             gameObject.AddComponent<EnvironmentBuilder>().Build(worldSize, groundMaterial, waterMaterial);
 
-        if (GetComponent<VillageSimulation>() == null)
-            gameObject.AddComponent<VillageSimulation>();
-
-        // Persistent empire progression, era unlocks and research are independent
-        // from the temporary village simulation and remain local to this device.
+        // Load progression and the saved building world before the village
+        // spawns its citizens and guards, so restored barracks/academy levels
+        // affect the units created at the beginning of this session.
         if (GetComponent<EmpireProgressionSystem>() == null)
             gameObject.AddComponent<EmpireProgressionSystem>();
+
+        if (!BuildingWorldSaveSystem.Load(out string buildingLoadError) &&
+            !string.IsNullOrEmpty(buildingLoadError))
+            Debug.LogWarning("Initial building world load failed: " + buildingLoadError);
+
+        if (GetComponent<VillageSimulation>() == null)
+            gameObject.AddComponent<VillageSimulation>();
 
         GameObject cameraObject = Camera.main != null ? Camera.main.gameObject : new GameObject("Main Camera");
         cameraObject.tag = "MainCamera";
