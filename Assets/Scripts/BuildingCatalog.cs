@@ -111,12 +111,7 @@ public class BuildingInstance : MonoBehaviour
         if (cost == null || !inventory.TrySpend(cost)) return false;
 
         level++;
-        // Higher tiers visibly reinforce the existing structure instead of replacing it.
-        float tierScale = 1f + (level - 1) * 0.075f;
-        transform.localScale = baseScale * tierScale;
-        if (cachedRenderer != null)
-            cachedRenderer.material.color = Color.Lerp(baseColor, Color.white, (level - 1) * 0.12f);
-        gameObject.name = DisplayName + " (سطح " + level + ")";
+        ApplyLevelAppearance();
         return true;
     }
 
@@ -129,19 +124,80 @@ public class BuildingInstance : MonoBehaviour
         cachedRenderer = GetComponent<Renderer>();
         if (cachedRenderer != null) baseColor = cachedRenderer.material.color;
         gameObject.name = definition.DisplayName + " (سطح ۱)";
+        ApplyLevelAppearance();
     }
+
     public void RestoreLevel(int savedLevel)
     {
         level = Mathf.Clamp(savedLevel, 1, MaximumLevel);
         if (baseScale == Vector3.zero) baseScale = transform.localScale;
         if (cachedRenderer == null) cachedRenderer = GetComponent<Renderer>();
-        transform.localScale = baseScale * (1f + (level - 1) * 0.06f);
+        if (cachedRenderer != null && baseColor == Color.white)
+            baseColor = cachedRenderer.material.color;
+        ApplyLevelAppearance();
+    }
+
+    private void ApplyLevelAppearance()
+    {
+        // The same building remains in place; each tier adds visible fortification details.
+        transform.localScale = baseScale * (1f + (level - 1) * 0.075f);
         if (cachedRenderer != null)
+            cachedRenderer.material.color = Color.Lerp(baseColor, Color.white, (level - 1) * 0.12f);
+
+        Transform oldDetails = transform.Find("UpgradeVisuals");
+        if (oldDetails != null) Destroy(oldDetails.gameObject);
+        if (level <= 1) return;
+
+        GameObject details = new GameObject("UpgradeVisuals");
+        details.transform.SetParent(transform, false);
+        BuildingDefinition definition = BuildingCatalog.Get(definitionId);
+        float width = definition != null ? definition.Footprint.x : 3f;
+        float height = definition != null ? definition.Footprint.y : 2f;
+        float depth = definition != null ? definition.Footprint.z : 3f;
+        Color stone = new Color(.48f, .47f, .42f);
+        Color dark = new Color(.25f, .2f, .16f);
+
+        if (level >= 2)
         {
-            if (baseColor == Color.white) baseColor = cachedRenderer.material.color;
-            cachedRenderer.material.color = Color.Lerp(baseColor, Color.white, (level - 1) * 0.08f);
+            AddDetail(details.transform, PrimitiveType.Cube,
+                new Vector3(0f, height + .08f, 0f), new Vector3(width * 1.08f, .22f, depth * 1.08f), stone);
         }
-        gameObject.name = DisplayName + " (سطح " + level + ")";
+        if (level >= 3)
+        {
+            for (int x = -1; x <= 1; x += 2)
+            for (int z = -1; z <= 1; z += 2)
+                AddDetail(details.transform, PrimitiveType.Cylinder,
+                    new Vector3(x * width * .42f, height + .42f, z * depth * .42f),
+                    new Vector3(.48f, .48f, .48f), stone);
+        }
+        if (level >= 4)
+        {
+            AddDetail(details.transform, PrimitiveType.Cylinder,
+                new Vector3(0f, height + 1.05f, 0f), new Vector3(.09f, .8f, .09f), dark);
+            AddDetail(details.transform, PrimitiveType.Cube,
+                new Vector3(.32f, height + 1.35f, 0f), new Vector3(.58f, .34f, .05f),
+                new Color(.55f, .16f, .12f));
+        }
+        if (level >= 5)
+        {
+            AddDetail(details.transform, PrimitiveType.Cube,
+                new Vector3(0f, height + 1.7f, 0f),
+                new Vector3(width * .48f, .75f, depth * .48f), new Color(.57f, .49f, .37f));
+        }
+    }
+
+    private static void AddDetail(Transform parent, PrimitiveType shape,
+        Vector3 position, Vector3 scale, Color color)
+    {
+        GameObject part = GameObject.CreatePrimitive(shape);
+        part.name = "ارتقای ظاهری";
+        part.transform.SetParent(parent, false);
+        part.transform.localPosition = position;
+        part.transform.localScale = scale;
+        Collider collider = part.GetComponent<Collider>();
+        if (collider != null) Destroy(collider);
+        Renderer renderer = part.GetComponent<Renderer>();
+        if (renderer != null) renderer.material.color = color;
     }
 
 }
