@@ -96,7 +96,7 @@ public static class BuildingWorldSaveSystem
                 GameObject building = GameObject.CreatePrimitive(definition.Shape);
                 building.transform.position = record.position;
                 building.transform.rotation = record.rotation;
-                building.transform.localScale = definition.Footprint;
+                building.transform.localScale = definition.WorldScale;
 
                 Renderer renderer = building.GetComponent<Renderer>();
                 if (renderer != null) renderer.material.color = definition.Color;
