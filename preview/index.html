@@ -115,7 +115,7 @@ function cylinder(x,y,z,r,h,color,n=9){for(let i=0;i<n;i++){let a=i*Math.PI*2/n,
 function sphere(x,y,z,r,color){let n=7,m=10;for(let j=0;j<n;j++)for(let i=0;i<m;i++){let pt=(a,b)=>[x+r*Math.sin(a)*Math.cos(b),y+r*Math.cos(a),z+r*Math.sin(a)*Math.sin(b)],a=j*Math.PI/n,b=(j+1)*Math.PI/n,c=i*Math.PI*2/m,d=(i+1)*Math.PI*2/m;quad(pt(a,c),pt(b,c),pt(b,d),pt(a,d),color)}}
 function roof(x,y,z,w,d,color){let a=[x-w/2,y,z-d/2],b=[x+w/2,y,z-d/2],c=[x+w/2,y,z+d/2],e=[x-w/2,y,z+d/2],top=[x,y+Math.min(w,d)*.34,z];tri(a,b,top,color);tri(b,c,top,color);tri(c,e,top,color);tri(e,a,top,color)}
 function terrain(){let n=34,size=52,step=size/n;for(let z=0;z<n;z++)for(let x=0;x<n;x++){let xx=-26+x*step,zz=-26+z*step,h=(a,b)=>Math.sin(a*.23)*.22+Math.cos(b*.19)*.18+Math.sin((a+b)*.11)*.12;quad([xx,h(xx,zz),zz],[xx+step,h(xx+step,zz),zz],[xx+step,h(xx+step,zz+step),zz+step],[xx,h(xx,zz+step),zz+step],((x+z)%3===0)?"#716c43":"#777148")}}
-let structures=[{kind:"tower-archer",x:-7,z:-9,hp:180,maxHp:180},{kind:"tower-sentinel",x:15,z:-12,hp:200,maxHp:200}],people=[],raiders=[],beasts=[],aircraft=[],wood=250,stone=150,food=200,gold=100,guards=2,buildMode=false,selected="house",raidTimer=45,raidNo=0;
+let structures=[{kind:"tower-archer",x:-7,z:-9,hp:180,maxHp:180},{kind:"tower-sentinel",x:15,z:-12,hp:200,maxHp:200}],people=[{x:-3,z:1,guard:true,type:"militia",hp:70},{x:5,z:4,guard:true,type:"militia",hp:70}],raiders=[],beasts=[],aircraft=[],wood=250,stone=150,food=200,gold=100,guards=2,buildMode=false,selected="house",raidTimer=45,raidNo=0;
 function addHouse(x,z,scale=1,color="#b58c5d"){
  const s=scale,wall=color;
  // Raised stone footing and thick earthen walls.
@@ -193,7 +193,36 @@ function addTower(x,z,kind="tower-archer"){
  for(let i=0;i<7;i++)box(x+1.18,.38+i*.38,z,.08,.07,.55,wood);
  box(x+1.18,1.1,z,.12,1.25,.68,shadow);
  box(x+1.26,1.1,z,.035,.95,.42,wood);
-}function addTree(x,z){cylinder(x,.75,z,.22,1.5,"#68452a",7);sphere(x,2,z,.95,"#456b38")}
+}
+function addBridge(x,z){
+ // Timber-and-stone crossing over the Panjshir river.
+ box(x,.18,z,5.6,.34,4.8,"#75634d");
+ for(let k=0;k<9;k++)box(x-2.35+k*.59,.39,z,.52,.12,4.45,k%2?"#76563a":"#896746");
+ for(const dx of [-2.45,2.45])for(const dz of [-1.9,1.9]){
+  box(x+dx,-.18,z+dz,.28,.72,.28,"#5d4c3a");
+  box(x+dx,.48,z+dz,.2,.34,.2,"#9a805e");
+ }
+ for(const dz of [-2.15,2.15]){
+  box(x,.78,z+dz,5.2,.13,.13,"#65452e");
+  for(let k=0;k<9;k++)box(x-2.3+k*.57,.62,z+dz,.1,.35,.1,"#65452e");
+ }
+}
+function addCheckpoint(x,z){
+ // Low sandbag bunker, field shelter and a timber road barrier.
+ const bag="#a18a68",dark="#5e4d39",cloth="#75634d";
+ for(let row=0;row<3;row++)for(let k=0;k<5;k++){
+  box(x-1.35+k*.68,.28+row*.31,z+1.05,.64,.28,.42,bag);
+  box(x-1.35+k*.68,.28+row*.31,z-1.05,.64,.28,.42,bag);
+ }
+ box(x,.78,z,3.7,.18,2.7,dark);
+ for(const dx of [-1.55,1.55])for(const dz of [-.95,.95])box(x+dx,1.55,z+dz,.13,1.55,.13,"#60432d");
+ box(x,2.35,z,4,.16,3.1,cloth);
+ roof(x,2.45,z,4.3,3.3,"#8a7657");
+ box(x-2.55,.48,z-2.2,.18,.9,.18,dark);
+ box(x-1.2,.48,z-2.2,2.7,.16,.16,"#76502f");
+ box(x-2.55,.94,z-2.2,.18,.16,.18,"#c3a06b");
+}
+function addTree(x,z){cylinder(x,.75,z,.22,1.5,"#68452a",7);sphere(x,2,z,.95,"#456b38")}
 function addQala(x,z,w=7,d=6){const wall="#a78b65";box(x,1.15,z-d/2,w,2.3,.45,wall);box(x,1.15,z+d/2,w,2.3,.45,wall);box(x-w/2,1.15,z,.45,2.3,d,wall);box(x+w/2,1.15,z,.45,2.3,d,wall);box(x,1.0,z+d/2,.9,1.65,.5,"#64452f");for(const [dx,dz] of [[-w/2,-d/2],[w/2,-d/2],[-w/2,d/2],[w/2,d/2]]){box(x+dx,2.55,z+dz,.8,.55,.8,"#b69a72");box(x+dx,2.9,z+dz,.35,.2,.35,"#8a704e")}}
 function addMinaret(x,z){cylinder(x,2.0,z,.55,4,"#b99a70",12);cylinder(x,3.7,z,.72,.25,"#8c7658",12);cylinder(x,4.2,z,.4,.8,"#b99a70",12);sphere(x,4.75,z,.43,"#c7a96f");cylinder(x,5.2,z,.035,.6,"#e2c37a",6);box(x,1.15,z-.52,.25,1.6,.12,"#5b4936")}
 function addMountain(x,z,w,h,d,color){let a=[x-w/2,0,z-d/2],b=[x+w/2,0,z-d/2],c=[x+w/2,0,z+d/2],e=[x-w/2,0,z+d/2],peak=[x,h,z];tri(a,b,peak,color);tri(b,c,peak,"#746d57");tri(c,e,peak,color);tri(e,a,peak,"#5f604d");tri(a,peak,e,"#8a8061")}
@@ -201,7 +230,7 @@ function addOrchard(x,z,rows=3,cols=4){for(let r=0;r<rows;r++)for(let c=0;c<cols
 function drawHuman(p,enemy=false){const skin=p.skin|| (enemy?"#a56f50":"#b9825a"),cloth=enemy?"#554b43":p.guard?"#354f70":"#76513a",x=p.x,z=p.z;const h=p.guard?1.0:.92;box(x,.92*h,z,.48,.78*h,.3,cloth);sphere(x,1.52*h,z,.22,skin);sphere(x,1.68*h,z,.27,enemy?"#4a3a2c":"#d0b27a");box(x,1.46*h,z-.015,.43,.09,.34,enemy?"#46362b":"#b18c54");cylinder(x-.31,.88*h,z,.085,.55,skin,7);cylinder(x+.31,.88*h,z,.085,.55,skin,7);cylinder(x-.14,.28*h,z,.09,.48,"#493d35",7);cylinder(x+.14,.28*h,z,.09,.48,"#493d35",7);if(p.guard){box(x-.38,.92*h,z-.13,.22,.38,.08,"#9a7441");cylinder(x+.42,1.15*h,z,.035,.78,"#76512f",6)}else{box(x+.35,1.0*h,z,.12,.42,.1,"#77644d")}if(enemy){box(x,2.08,z,.72,.07,.12,"#3d2926");box(x-.36+.72*Math.max(0,p.hp||0)/(p.maxHp||100)/2,2.08,z-.01,.72*Math.max(0,p.hp||0)/(p.maxHp||100),.08,.13,"#a9c66a")}}
 function drawBeast(a){let fur=a.kind==="lion"?"#b9823e":a.kind==="leopard"?"#c69a57":"#d5dce0";let x=a.x,z=a.z;sphere(x,.78,z,.55,fur);sphere(x+.43,.85,z-.12,.27,fur);sphere(x+.62,.78,z-.14,.13,"#49372b");for(let k=0;k<4;k++){let lx=x+(k<2?-.28:.28),lz=z+(k%2?-.28:.28);cylinder(lx,.32,lz,.09,.52,"#514235",7)}cylinder(x-.53,.8,z+.1,.06,.6,fur,7);if(a.kind==="lion")for(let k=0;k<8;k++){let an=k*Math.PI/4;sphere(x+.34+Math.cos(an)*.24,.9,z-.12+Math.sin(an)*.24,.13,"#80502b")}if(a.kind==="leopard")for(let k=0;k<8;k++)sphere(x+Math.sin(k*7)*.34,.93,z+Math.cos(k*7)*.3,.055,"#493322");if(a.kind==="snow")for(let k=0;k<5;k++)sphere(x+Math.sin(k*4)*.31,.95,z+Math.cos(k*4)*.27,.045,"#687681")}
 function drawAircraft(p){box(p.x,9,p.z,3.2,.22,.72,"#89979a");box(p.x,9.05,p.z,.65,.16,3.4,"#c2c9c5");box(p.x,9,p.z-1.2,.5,.12,1.05,"#68767a");cylinder(p.x,9,p.z+1.55,.22,.38,"#59666a",8)}
-function buildWorld(){vertices=[];colors=[];terrain();addMountain(-22,-18,15,8,10,"#6e6b55");addMountain(-10,-23,17,11,9,"#7c745c");addMountain(19,-22,18,12,10,"#696a56");addMountain(24,18,15,9,11,"#7b7359");addQala(-15,9,8,7);addMinaret(-12,9);addOrchard(12,11,3,4);box(-14,.02,0,3.5,.12,52,"#347d91");box(1,.12,-1,2.5,.12,35,"#b39a6c");box(4,.13,4,17,.1,2,"#a88b5d");
+function buildWorld(){vertices=[];colors=[];terrain();addMountain(-22,-18,15,8,10,"#6e6b55");addMountain(-10,-23,17,11,9,"#7c745c");addMountain(19,-22,18,12,10,"#696a56");addMountain(24,18,15,9,11,"#7b7359");addQala(-15,9,8,7);addMinaret(-12,9);addOrchard(12,11,3,4);addBridge(-14,-1);addCheckpoint(5,-10);box(-14,.02,0,3.5,.12,52,"#347d91");box(1,.12,-1,2.5,.12,35,"#b39a6c");box(4,.13,4,17,.1,2,"#a88b5d");
 for(let i=0;i<26;i++){let x=Math.sin(i*4.3)*21,z=Math.cos(i*3.2)*21;if(Math.abs(x+14)<3||(x>-1&&x<11&&z>-7&&z<10))continue;addTree(x,z)}
 addHouse(3,3,1.45,"#c6a06d");addHouse(8,-4,.9);addHouse(8,3,.92,"#9f8158");addHouse(-2,-5,1.05,"#a77d56");addHouse(13,8,.88);
 for(let i=0;i<13;i++){let x=-10+i*2;box(x,1.35,-12,1.85,1.7,.8,"#8f7858");box(x,2.35,-12,.55,.3,.9,"#9c8564")}
@@ -273,20 +302,7 @@ function showBeastStable(){let items=[["lion","شیر نگهبان افسانه�
 function upgradeEmpire(){if(empire.level>=30){toast("بالاترین سطح پایتخت را داری");return}let c=[90+empire.level*28,65+empire.level*34,20+empire.level*22];if(empire.xp<needXP()||wood<c[0]||stone<c[1]||gold<c[2]){toast("تجربه یا منابع لازم برای ارتقا کافی نیست");return}empire.xp-=needXP();wood-=c[0];stone-=c[1];gold-=c[2];empire.level++;persistEmpire();drawEmpire();updateHud();saveGame(false);toast("پایتخت به سطح "+empire.level+" ارتقا یافت")}
 function campaignUI(){let st=document.createElement("style");st.textContent='#empireHud{position:fixed;top:75px;left:9px;width:180px;padding:9px;background:#10231eef;border:1px solid #d9b96b;border-radius:12px;font-size:10px;pointer-events:none;box-shadow:0 5px 18px #0008}#empireHud b{color:#f2d58b}.xpbar{height:6px;background:#ffffff25;border-radius:8px;overflow:hidden;margin:6px 0}.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#ad813a,#f5dc91)}#empireHud small{color:#e0e4d8}#campaignMenu{position:fixed;right:8px;top:300px;display:grid;gap:6px}#campaignMenu button{font-size:10px;padding:9px}#campaignPanel{display:none;position:fixed;z-index:30;inset:12% 4%;background:#10211ff7;border:1px solid #d9b96b;border-radius:16px;overflow:hidden;box-shadow:0 15px 50px #000b}#campaignPanel header{display:flex;justify-content:space-between;padding:12px;color:#f3d994;border-bottom:1px solid #d9b96b55}#campaignPanel section{height:calc(100% - 48px);overflow:auto;padding:10px;display:grid;align-content:start;gap:8px}#campaignPanel article{padding:10px;background:#ffffff0b;border:1px solid #ffffff20;border-radius:10px;display:grid;gap:5px}#campaignPanel small{font-size:10px;color:#d4d9cc}#campaignPanel em{color:#9fe0aa;font-style:normal}#campaignPanel button:disabled{opacity:.35}@media(max-width:420px){#empireHud{width:155px;font-size:9px}#campaignMenu{top:265px}#campaignMenu button{font-size:9px;padding:8px}}';document.head.appendChild(st);let h=document.createElement("div");h.id="empireHud";document.body.appendChild(h);let m=document.createElement("div");m.id="campaignMenu";m.innerHTML="<button id='missionsBtn'>📜 مأموریت‌ها</button><button id='armyBtn'>⚔️ ارتش</button><button id='beastBtn'>🦁 نگهبانان</button><button id='researchBtn'>📚 فناوری</button><button id='upgradeBtn'>⬆️ ارتقای پایتخت</button>";document.body.appendChild(m);let p=document.createElement("div");p.id="campaignPanel";document.body.appendChild(p);document.getElementById("missionsBtn").onclick=showMissions;document.getElementById("armyBtn").onclick=showArmy;document.getElementById("beastBtn").onclick=showBeastStable;document.getElementById("researchBtn").onclick=showResearch;document.getElementById("upgradeBtn").onclick=upgradeEmpire;drawEmpire()}
 campaignUI();
-let airRaidCountdown=85;
-setInterval(()=>{
- for(let i=raiders.length-1;i>=0;i--){
-  const e=raiders[i];let beast=beasts.find(b=>Math.hypot(b.x-e.x,b.z-e.z)<2.2);
-  if(beast){beast.hp-=beast.damage*.45;raiders.splice(i,1);empireXP(8);continue}
-  if(Math.hypot(e.x-3,e.z-3)<2.5){empire.health=Math.max(0,empire.health-4);raiders.splice(i,1);toast("دشمن به حریم دهکده رسید؛ دفاع را تقویت کن")}
- }
- airRaidCountdown--;
- if(airRaidCountdown<=0){aircraft.push({x:-24,z:Math.random()*14-7});airRaidCountdown=125;toast("هشدار هوایی: هواگرد ناشناس وارد منطقه شد")}
- for(let i=aircraft.length-1;i>=0;i--){let p=aircraft[i];p.x+=.65;if(p.x>24){aircraft.splice(i,1);if(Math.random()<.55){empire.health=Math.max(0,empire.health-8);toast("حمله هوایی به حاشیه دهکده آسیب زد")}}}
- beasts=beasts.filter(b=>b.hp>0);
- if(beasts.length||aircraft.length)buildWorld();
- drawEmpire();saveGame(false);
-},1000);
+/* A single combat clock owns ground raids, beasts and aircraft. */
 const priorPlaceAt=placeAt;
 placeAt=function(x,y){let n=structures.length;priorPlaceAt(x,y);if(structures.length>n){empireXP(25);saveGame(false)}};
 const priorSaveGame=saveGame;
