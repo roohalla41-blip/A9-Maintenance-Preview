@@ -35,6 +35,27 @@ button:active{transform:translateY(1px) scale(.97);filter:brightness(1.22);backg
 #help{background:#101d1bd9;border:1px solid #e7c77c55;color:#e8dfc8}
 @media(max-width:420px){.resources{gap:6px;padding:8px}.resources span{gap:2px;font-size:10px}.resources b{font-size:11px}.res-icon{width:14px;height:14px}.brand{font-size:13px;padding:9px 10px}#right button{min-width:98px;padding:9px;font-size:11px}}
 
+</style><style id="phone-layout">
+#top{padding:calc(env(safe-area-inset-top,0px) + 7px) 7px 0;gap:5px}
+.brand{max-width:39vw;font-size:clamp(11px,3vw,15px);padding:8px}
+.brand small{font-size:clamp(8px,2vw,10px)}
+.resources{max-width:59vw;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:7px}
+.resources span{justify-content:center;font-size:clamp(9px,2.4vw,11px)}
+#right{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);right:7px;gap:5px}
+#right button{min-width:0;width:40px;height:40px;padding:4px;font-size:10px}
+#right button#save,#right button#train{width:88px;height:36px}
+#bottom{bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:6px}
+#bottom button{width:100%;min-width:0;min-height:42px;padding:6px 2px;font-size:clamp(9px,2.6vw,12px)}
+#buildPanel{left:6px;right:6px;bottom:calc(env(safe-area-inset-bottom,0px) + 56px);grid-template-columns:repeat(3,minmax(0,1fr));max-height:42vh;overflow:auto;padding:6px;gap:5px}
+#buildPanel button{min-height:60px;padding:5px 2px;font-size:10px}
+#help{right:6px;bottom:calc(env(safe-area-inset-bottom,0px) + 125px);max-width:48vw;font-size:9px}
+#empireHud{top:calc(env(safe-area-inset-top,0px) + 72px);left:6px;width:min(43vw,180px);padding:7px}
+#campaignMenu{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 132px);right:6px;gap:4px}
+#campaignMenu button{min-height:36px;padding:6px;font-size:clamp(9px,2.4vw,11px)}
+#campaignPanel{inset:calc(env(safe-area-inset-top,0px) + 6%) 3% calc(env(safe-area-inset-bottom,0px) + 6%)}
+#campaignPanel header{position:sticky;top:0;background:#10211f}
+#campaignPanel section{height:calc(100% - 45px)}
+@media(min-width:600px){#right{top:100px;bottom:auto}#right button{width:auto;height:auto}#bottom{display:flex;justify-content:center;bottom:8px}#bottom button{width:auto;min-width:110px}#campaignMenu{top:300px;bottom:auto}}
 </style></head><body>
 <canvas id="game"></canvas>
 <div id="top"><div class="brand">افغانستان قدیم<small>دهکده مستقل · آفلاین و ذخیره روی گوشی</small></div><div class="resources"><span><svg class="res-icon" viewBox="0 0 24 24" aria-label="چوب"><path d="M4 17 17 4l3 3L7 20z" fill="#b77b45" stroke="#f0c58a" stroke-width="1.2"/><path d="m8 16 2 2m2-6 2 2" stroke="#6e472e" stroke-width="1.3"/></svg><b id="wood">250</b></span><span><svg class="res-icon" viewBox="0 0 24 24" aria-label="سنگ"><path d="m3 17 3-9 7-4 7 5 1 8-8 4z" fill="#8a9aa0" stroke="#d9e0db" stroke-width="1.2"/><path d="m6 9 6 4 8-4m-8 4-1 8" fill="none" stroke="#59686c" stroke-width="1.2"/></svg><b id="stone">150</b></span><span><svg class="res-icon" viewBox="0 0 24 24" aria-label="غذا"><path d="M12 21V5m0 7C5 13 4 8 4 6c5 0 8 2 8 6m0-2c0-5 3-8 8-8 0 5-2 9-8 10" fill="#9cb66a" stroke="#d8e5a1" stroke-width="1.4"/></svg><b id="food">200</b></span><span><svg class="res-icon" viewBox="0 0 24 24" aria-label="طلا"><path d="m4 8 4-5h8l4 5-8 13z" fill="#d9a93f" stroke="#ffe39b" stroke-width="1.2"/><path d="m4 8 8 3 8-3M8 3l4 8 4-8" fill="none" stroke="#fff0b5" stroke-width="1"/></svg><b id="gold">100</b></span></div></div>
