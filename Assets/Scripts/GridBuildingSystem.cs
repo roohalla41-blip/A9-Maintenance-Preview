@@ -6,6 +6,7 @@ public class GridBuildingSystem : MonoBehaviour
     [Min(1f)] public float buildRadius = 17f;
 
     private bool buildMode;
+    public bool IsBuildMode { get { return buildMode; } }
     private int selectedBuilding = 1;
     private Camera mainCamera;
 
