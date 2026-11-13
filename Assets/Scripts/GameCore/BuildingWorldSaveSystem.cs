@@ -8,6 +8,7 @@ public sealed class PlacedBuildingRecord
 {
     public int definitionId;
     public int level;
+    public bool isPlayerPlaced;
     public Vector3 position;
     public Quaternion rotation;
 }
@@ -15,14 +16,14 @@ public sealed class PlacedBuildingRecord
 [Serializable]
 public sealed class PlacedBuildingSave
 {
-    public int version = 2;
+    public int version = 3;
     public List<PlacedBuildingRecord> buildings = new List<PlacedBuildingRecord>();
 }
 
 /// <summary>Persists player-placed structures locally with recoverable writes.</summary>
 public static class BuildingWorldSaveSystem
 {
-    private const int CurrentVersion = 2;
+    private const int CurrentVersion = 3;
     private const int MaximumSavedBuildings = 5000;
     private static string SavePath => Path.Combine(Application.persistentDataPath, "afghanistan-old-buildings.json");
     private static string BackupPath => SavePath + ".bak";
@@ -38,7 +39,7 @@ public static class BuildingWorldSaveSystem
             BuildingInstance[] instances = UnityEngine.Object.FindObjectsOfType<BuildingInstance>();
             foreach (BuildingInstance instance in instances)
             {
-                if (instance == null || !instance.isPlayerPlaced) continue;
+                if (instance == null) continue;
                 if (data.buildings.Count >= MaximumSavedBuildings)
                     throw new InvalidDataException("Too many placed buildings to save safely.");
 
@@ -46,6 +47,7 @@ public static class BuildingWorldSaveSystem
                 {
                     definitionId = instance.definitionId,
                     level = Mathf.Clamp(instance.level, 1, BuildingInstance.MaximumLevel),
+                    isPlayerPlaced = instance.isPlayerPlaced,
                     position = instance.transform.position,
                     rotation = instance.transform.rotation
                 });
@@ -93,6 +95,26 @@ public static class BuildingWorldSaveSystem
                 BuildingDefinition definition = BuildingCatalog.Get(record.definitionId);
                 if (definition == null) continue;
 
+                if (!record.isPlayerPlaced)
+                {
+                    BuildingInstance closest = null;
+                    float closestDistance = 4f;
+                    BuildingInstance[] startingBuildings = UnityEngine.Object.FindObjectsOfType<BuildingInstance>();
+                    foreach (BuildingInstance candidate in startingBuildings)
+                    {
+                        if (candidate == null || candidate.isPlayerPlaced ||
+                            candidate.definitionId != record.definitionId) continue;
+                        float distance = (candidate.transform.position - record.position).sqrMagnitude;
+                        if (distance < closestDistance)
+                        {
+                            closestDistance = distance;
+                            closest = candidate;
+                        }
+                    }
+                    if (closest != null) closest.RestoreLevel(record.level);
+                    continue;
+                }
+
                 GameObject building = GameObject.CreatePrimitive(definition.Shape);
                 building.transform.position = record.position;
                 building.transform.rotation = record.rotation;
@@ -124,7 +146,7 @@ public static class BuildingWorldSaveSystem
         try
         {
             PlacedBuildingSave data = JsonUtility.FromJson<PlacedBuildingSave>(File.ReadAllText(path));
-            if (data == null || (data.version != 1 && data.version != CurrentVersion) || data.buildings == null ||
+            if (data == null || (data.version < 1 || data.version > CurrentVersion) || data.buildings == null ||
                 data.buildings.Count > MaximumSavedBuildings)
                 return null;
 
@@ -137,6 +159,9 @@ public static class BuildingWorldSaveSystem
                     !IsFinite(record.rotation.z) || !IsFinite(record.rotation.w))
                     return null;
             }
+            if (data.version < 3)
+                foreach (PlacedBuildingRecord record in data.buildings)
+                    record.isPlayerPlaced = true; // Older saves stored only player-placed structures.
             data.version = CurrentVersion; // Migrate the previous save format in memory.
             return data;
         }
