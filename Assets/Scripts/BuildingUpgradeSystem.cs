@@ -15,14 +15,11 @@ public class BuildingUpgradeSystem : MonoBehaviour
         GridBuildingSystem builder = GetComponent<GridBuildingSystem>();
         if (builder != null && builder.IsBuildMode) return;
 
-        if (Input.touchCount > 0)
+        if (Input.touchCount == 1)
         {
-            for (int i = 0; i < Input.touchCount; i++)
-            {
-                Touch touch = Input.GetTouch(i);
-                if (touch.phase == TouchPhase.Ended && !IsUpgradeUiPosition(touch.position))
-                    SelectAt(touch.position);
-            }
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Ended && !IsUpgradeUiPosition(touch.position))
+                SelectAt(touch.position);
         }
         else if (Input.GetMouseButtonDown(0) && !IsUpgradeUiPosition(Input.mousePosition))
         {
@@ -35,10 +32,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
 
     private bool IsUpgradeUiPosition(Vector2 position)
     {
-        Vector2 logical = MobileUiLayout.ToLogicalScreenPosition(position);
-        float logicalHeight = Screen.height / MobileUiLayout.Scale;
-        float guiY = logicalHeight - logical.y;
-        return logical.x < 430f && guiY > logicalHeight - 125f;
+        return MobileUiLayout.IsHudPosition(position);
     }
 
     private void SelectAt(Vector2 screenPosition)
