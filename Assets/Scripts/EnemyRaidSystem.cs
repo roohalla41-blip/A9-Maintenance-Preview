@@ -127,6 +127,47 @@ public class EnemyRaidSystem : MonoBehaviour
             " آموزش دید؛ قدرت نیرو با ارتقای سربازخانه و زرادخانه افزایش می‌یابد";
     }
 
+    public void TrainArmoredVehicle()
+    {
+        VillageSimulation economy = VillageSimulation.Instance;
+        EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
+        if (economy == null || economy.Inventory == null || progression == null) return;
+
+        int tier = BuildingProgressionRules.GetArmyTier(progression.CapitalLevel);
+        if (tier < 3)
+        {
+            status = "تانک قفل است؛ تالار سطح ۱۱، زرادخانه سطح ۲ و آکادمی سطح ۲ لازم است";
+            return;
+        }
+        if (economy.armoredVehicles >= 20)
+        {
+            status = "ظرفیت خودروهای زرهی تکمیل شده است";
+            return;
+        }
+
+        ResourceAmounts cost = new ResourceAmounts
+        {
+            wood = 100, stone = 150, gold = 100, food = 120
+        };
+        if (!economy.Inventory.TrySpend(cost))
+        {
+            status = "منابع کافی برای ساخت تانک ندارید";
+            return;
+        }
+
+        Vector3 spawn = new Vector3(Random.Range(-8f, 8f), .25f, Random.Range(-8f, 8f));
+        ArmoredVehicleGuard.Create(spawn);
+        economy.armoredVehicles++;
+        LocalSaveCoordinator coordinator = FindObjectOfType<LocalSaveCoordinator>();
+        if (coordinator != null) coordinator.SaveAll();
+        else
+        {
+            GameSaveSystem.Save(economy.Inventory);
+            economy.SaveRoster();
+        }
+        status = "خودروی زرهی دفاعی ساخته شد";
+    }
+
     public void DamageVillage(int amount)
     {
         if (villageDefeated || amount <= 0) return;
@@ -156,8 +197,15 @@ public class EnemyRaidSystem : MonoBehaviour
         GUI.Box(new Rect(12, 400, 300, 104),
             "دفاع از دهکده | سلامت: " + villageHealth + "%\n" +
             (villageActiveLabel()) + "\n" + status);
-        if (GUI.Button(new Rect(18, 510, 180, 34), "آموزش نگهبان (۲۵ چوب، ۲۰ غذا)"))
+        if (GUI.Button(new Rect(18, 510, 180, 34), "آموزش نگهبان"))
             TrainGuard();
+        GUI.enabled = VillageSimulation.Instance != null &&
+            VillageSimulation.Instance.armoredVehicles < 20 &&
+            EmpireProgressionSystem.Instance != null &&
+            BuildingProgressionRules.GetArmyTier(EmpireProgressionSystem.Instance.CapitalLevel) >= 3;
+        if (GUI.Button(new Rect(205, 510, 185, 34), "ساخت تانک دفاعی"))
+            TrainArmoredVehicle();
+        GUI.enabled = true;
     
         MobileUiLayout.End(previousMatrix);
     }
@@ -290,5 +338,88 @@ public class Raider : MonoBehaviour
         for (int i = active.Count - 1; i >= 0; i--)
             if (active[i] != null) Destroy(active[i].gameObject);
         active.Clear();
+    }
+}
+
+
+/// <summary>
+/// Unlockable offline armored defender. Its visual is a temporary low-poly blockout.
+/// </summary>
+public sealed class ArmoredVehicleGuard : MonoBehaviour
+{
+    private float fireTimer;
+    public float moveSpeed = 1.25f;
+    public float attackRange = 8f;
+    public float damage = 28f;
+
+    public static ArmoredVehicleGuard Create(Vector3 position)
+    {
+        GameObject root = new GameObject("خودروی زرهی دفاعی");
+        root.transform.position = position;
+
+        GameObject hull = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        hull.name = "بدنه زرهی";
+        hull.transform.SetParent(root.transform, false);
+        hull.transform.localPosition = new Vector3(0f, .55f, 0f);
+        hull.transform.localScale = new Vector3(2.5f, .75f, 1.55f);
+        hull.GetComponent<Renderer>().material.color = new Color(.27f, .32f, .24f);
+
+        GameObject turret = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        turret.name = "برجک";
+        turret.transform.SetParent(root.transform, false);
+        turret.transform.localPosition = new Vector3(0f, 1.05f, 0f);
+        turret.transform.localScale = new Vector3(1.05f, .45f, .95f);
+        turret.GetComponent<Renderer>().material.color = new Color(.2f, .25f, .19f);
+
+        GameObject barrel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        barrel.name = "لوله دفاعی";
+        barrel.transform.SetParent(root.transform, false);
+        barrel.transform.localPosition = new Vector3(0f, 1.08f, -.72f);
+        barrel.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        barrel.transform.localScale = new Vector3(.14f, .7f, .14f);
+        barrel.GetComponent<Renderer>().material.color = new Color(.16f, .18f, .16f);
+
+        for (int side = -1; side <= 1; side += 2)
+        {
+            GameObject track = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            track.name = "زنجیر شنی";
+            track.transform.SetParent(root.transform, false);
+            track.transform.localPosition = new Vector3(side * 1.1f, .25f, 0f);
+            track.transform.localScale = new Vector3(.38f, .48f, 1.85f);
+            track.GetComponent<Renderer>().material.color = new Color(.12f, .13f, .12f);
+        }
+
+        return root.AddComponent<ArmoredVehicleGuard>();
+    }
+
+    private void Update()
+    {
+        Raider target = null;
+        float nearest = attackRange * attackRange;
+        int count = Raider.ActiveCount;
+        for (int i = 0; i < count; i++)
+        {
+            Raider enemy = Raider.GetActive(i);
+            if (enemy == null) continue;
+            float distance = (enemy.transform.position - transform.position).sqrMagnitude;
+            if (distance < nearest) { nearest = distance; target = enemy; }
+        }
+        if (target == null) return;
+
+        Vector3 direction = target.transform.position - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude > 3.2f)
+        {
+            transform.position += direction.normalized * moveSpeed * Time.deltaTime;
+            transform.rotation = Quaternion.LookRotation(direction);
+            return;
+        }
+
+        fireTimer -= Time.deltaTime;
+        if (fireTimer <= 0f)
+        {
+            target.TakeDamage(damage);
+            fireTimer = 1.8f;
+        }
     }
 }
