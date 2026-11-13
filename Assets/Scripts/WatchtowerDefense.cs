@@ -24,8 +24,12 @@ public class WatchtowerDefense : MonoBehaviour
         if (cooldown > 0f) return;
 
         int level = building != null ? Mathf.Clamp(building.level, 1, BuildingInstance.MaximumLevel) : 1;
-        float effectiveRange = range + (level - 1) * .45f;
-        float effectiveDamage = damage * (1f + (level - 1) * .22f);
+        EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
+        int weaponTier = BuildingProgressionRules.GetWeaponTier(
+            progression != null ? progression.CapitalLevel : 1);
+        float effectiveRange = range + (level - 1) * .45f + Mathf.Max(0, weaponTier - 1) * .6f;
+        float effectiveDamage = damage * (1f + (level - 1) * .22f) *
+            (1f + Mathf.Max(0, weaponTier - 1) * .18f);
         float best = effectiveRange * effectiveRange;
         Raider target = null;
 
