@@ -22,9 +22,9 @@ public sealed class ResourceAmountsTests
     }
 
     [Test]
-    public void BuildingCatalog_ContainsTenValidDefinitions()
+    public void BuildingCatalog_ContainsElevenValidDefinitions()
     {
-        Assert.AreEqual(10, BuildingCatalog.Count);
+        Assert.AreEqual(11, BuildingCatalog.Count);
         for (int id = 1; id <= BuildingCatalog.Count; id++)
         {
             BuildingDefinition definition = BuildingCatalog.Get(id);
