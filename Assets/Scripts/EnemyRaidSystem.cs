@@ -75,7 +75,31 @@ public class EnemyRaidSystem : MonoBehaviour
         }
 
         VillageSimulation economy = VillageSimulation.Instance;
-        if (economy == null || !economy.TrySpend(25, 0, 20))
+        if (economy == null) return;
+
+        if (economy.soldiers >= 500)
+        {
+            status = "ظرفیت نگهبانان تکمیل شده است";
+            return;
+        }
+
+        bool hasBarracks = false;
+        BuildingInstance[] buildings = FindObjectsOfType<BuildingInstance>();
+        foreach (BuildingInstance building in buildings)
+        {
+            if (building != null && building.definitionId == 3)
+            {
+                hasBarracks = true;
+                break;
+            }
+        }
+        if (!hasBarracks)
+        {
+            status = "برای آموزش نگهبان، ابتدا سربازخانه بساز";
+            return;
+        }
+
+        if (!economy.TrySpend(25, 0, 20))
         {
             status = "منابع کافی برای آموزش نگهبان ندارید";
             return;
