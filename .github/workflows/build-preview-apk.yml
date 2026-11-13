@@ -19,6 +19,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Validate offline game JavaScript
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path("preview/index.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script>(.*?)</script>", html, re.S)
+          if len(scripts) != 1:
+              raise SystemExit("Expected exactly one inline game script")
+          Path("/tmp/afghanistan-game.js").write_text(scripts[0], encoding="utf-8")
+          PY
+          node --check /tmp/afghanistan-game.js
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
