@@ -8,6 +8,9 @@ public class PrototypeBootstrap : MonoBehaviour
 
     private void Start()
     {
+        if (GetComponent<AfghanistanOld.Settings.QualityProfileController>() == null)
+            gameObject.AddComponent<AfghanistanOld.Settings.QualityProfileController>();
+
         if (FindObjectOfType<EnvironmentBuilder>() == null)
             gameObject.AddComponent<EnvironmentBuilder>().Build(worldSize, groundMaterial, waterMaterial);
 
