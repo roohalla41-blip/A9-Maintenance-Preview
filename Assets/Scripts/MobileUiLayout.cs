@@ -33,4 +33,18 @@ public static class MobileUiLayout
     {
         return screenPosition / Scale;
     }
+
+    public static bool IsHudPosition(Vector2 screenPosition)
+    {
+        Vector2 logical = ToLogicalScreenPosition(screenPosition);
+        float logicalHeight = Screen.height / Scale;
+        float guiY = logicalHeight - logical.y;
+        if (logical.x >= 430f) return false;
+
+        // Keep camera gestures away from all fixed gameplay panels and controls.
+        return guiY < 185f ||
+               (guiY >= 180f && guiY < 390f) ||
+               (guiY >= 390f && guiY < 590f) ||
+               guiY >= logicalHeight - 140f;
+    }
 }
