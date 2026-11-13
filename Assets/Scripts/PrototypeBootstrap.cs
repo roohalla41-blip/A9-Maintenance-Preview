@@ -37,5 +37,8 @@ public class PrototypeBootstrap : MonoBehaviour
             builder.gridSize = 1f;
             builder.buildRadius = 17f;
         }
+
+        if (GetComponent<BuildingUpgradeSystem>() == null)
+            gameObject.AddComponent<BuildingUpgradeSystem>();
     }
 }
