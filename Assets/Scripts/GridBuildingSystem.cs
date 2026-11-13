@@ -45,7 +45,7 @@ public class GridBuildingSystem : MonoBehaviour
     {
         float guiY = Screen.height - screenPosition.y;
         return screenPosition.x < 430f &&
-               (guiY < 155f || (guiY > 350f && guiY < 455f));
+               (guiY < 200f || (guiY > 350f && guiY < 510f));
     }
 
     private void PlaceBuilding(Vector2 screenPosition)
