@@ -83,6 +83,7 @@ public sealed class EmpireProgressionSystem : MonoBehaviour
     }
 
     private string SavePath { get { return Path.Combine(Application.persistentDataPath, SaveName); } }
+    private string BackupPath { get { return SavePath + ".bak"; } }
 
     private void Awake()
     {
@@ -202,33 +203,74 @@ public sealed class EmpireProgressionSystem : MonoBehaviour
     public void Save()
     {
         if (State == null) return;
+        string temporary = SavePath + ".tmp";
         try
         {
-            string json = JsonUtility.ToJson(State, true);
-            string temporary = SavePath + ".tmp";
-            File.WriteAllText(temporary, json);
-            if (File.Exists(SavePath)) File.Delete(SavePath);
-            File.Move(temporary, SavePath);
+            Directory.CreateDirectory(Application.persistentDataPath);
+            File.WriteAllText(temporary, JsonUtility.ToJson(State, true));
+            if (File.Exists(BackupPath)) File.Delete(BackupPath);
+            bool movedOld = false;
+            if (File.Exists(SavePath))
+            {
+                File.Move(SavePath, BackupPath);
+                movedOld = true;
+            }
+            try
+            {
+                File.Move(temporary, SavePath);
+            }
+            catch
+            {
+                if (movedOld && !File.Exists(SavePath) && File.Exists(BackupPath))
+                    File.Move(BackupPath, SavePath);
+                throw;
+            }
         }
-        catch (Exception exception) { Debug.LogError("Empire progress save failed: " + exception.Message); }
+        catch (Exception exception)
+        {
+            try { if (File.Exists(temporary)) File.Delete(temporary); } catch { }
+            Debug.LogError("Empire progress save failed: " + exception.Message);
+        }
     }
 
     private void Load()
     {
         State = new EmpireProgressState();
-        if (!File.Exists(SavePath)) return;
+        string source = File.Exists(SavePath) ? SavePath : BackupPath;
+        if (!File.Exists(source)) return;
+
+        EmpireProgressState loaded = TryReadProgress(source);
+        if (loaded == null && source != BackupPath && File.Exists(BackupPath))
+            loaded = TryReadProgress(BackupPath);
+        if (loaded == null)
+        {
+            Debug.LogError("Empire progress load failed: both local save files are invalid.");
+            return;
+        }
+
+        if (loaded.researchedTechnologies == null) loaded.researchedTechnologies = new List<string>();
+        if (loaded.completedObjectives == null) loaded.completedObjectives = new List<string>();
+        loaded.capitalLevel = Mathf.Clamp(loaded.capitalLevel, 1, MaximumCapitalLevel);
+        loaded.experience = Mathf.Max(0, loaded.experience);
+        loaded.totalExperience = Mathf.Max(loaded.experience, loaded.totalExperience);
+        State = loaded;
+    }
+
+    private static EmpireProgressState TryReadProgress(string path)
+    {
         try
         {
-            EmpireProgressState loaded = JsonUtility.FromJson<EmpireProgressState>(File.ReadAllText(SavePath));
-            if (loaded != null && loaded.version == 1)
-            {
-                if (loaded.researchedTechnologies == null) loaded.researchedTechnologies = new List<string>();
-                if (loaded.completedObjectives == null) loaded.completedObjectives = new List<string>();
-                loaded.capitalLevel = Mathf.Clamp(loaded.capitalLevel, 1, MaximumCapitalLevel);
-                State = loaded;
-            }
+            EmpireProgressState data = JsonUtility.FromJson<EmpireProgressState>(File.ReadAllText(path));
+            if (data == null || data.version != 1 ||
+                data.capitalLevel < 1 || data.capitalLevel > MaximumCapitalLevel ||
+                data.experience < 0 || data.totalExperience < 0)
+                return null;
+            return data;
         }
-        catch (Exception exception) { Debug.LogError("Empire progress load failed: " + exception.Message); }
+        catch
+        {
+            return null;
+        }
     }
 
     private static TechnologyDefinition FindTechnology(string id)
