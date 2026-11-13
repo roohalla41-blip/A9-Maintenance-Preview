@@ -42,10 +42,20 @@ public static class MobileUiLayout
         float guiY = logicalHeight - logical.y;
         if (logical.x >= 430f) return false;
 
-        // Keep camera gestures away from all fixed gameplay panels and controls.
-        return guiY < 185f ||
-               (guiY >= 180f && guiY < 390f) ||
-               (guiY >= 390f && guiY < 640f) ||
-               guiY >= logicalHeight - 140f;
+        // Only reserve the actual rectangles occupied by HUD controls.
+        // Broad bands here used to cover the entire screen and silently disabled
+        // one-finger camera orbit and touch building placement on many phones.
+        if (guiY >= 8f && guiY <= 182f) return true;       // village/build header
+        if (guiY >= 188f && guiY <= 382f) return true;     // resources and actions
+
+        GridBuildingSystem builder = Object.FindObjectOfType<GridBuildingSystem>();
+        if (builder != null && builder.IsBuildMode && guiY >= 384f && guiY <= 582f)
+            return true;                                  // building selection grid
+
+        if (guiY >= 588f && guiY <= 626f) return true;     // research shortcut
+        if (guiY >= logicalHeight - 142f && guiY <= logicalHeight - 4f)
+            return true;                                  // selected-building upgrade panel
+
+        return false;
     }
 }
