@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using UnityEngine;
 
 public class VillageSimulation : MonoBehaviour
@@ -15,6 +17,20 @@ public class VillageSimulation : MonoBehaviour
 
     [Min(1f)] public float productionInterval = 12f;
     private float productionTimer;
+    private const int MaximumRosterCount = 500;
+    private const int RosterVersion = 1;
+
+    [Serializable]
+    private class RosterSaveData
+    {
+        public int version = RosterVersion;
+        public int population;
+        public int soldiers;
+    }
+
+    private string RosterPath { get { return Path.Combine(Application.persistentDataPath, "village-roster.json"); } }
+    private string RosterBackupPath { get { return RosterPath + ".bak"; } }
+    private string RosterTempPath { get { return RosterPath + ".tmp"; } }
 
     private void Awake()
     {
@@ -32,9 +48,10 @@ public class VillageSimulation : MonoBehaviour
 
     private void Start()
     {
-        // Restore the previous offline session when a save exists.
+        // Restore resources and the local village roster before creating citizens.
         if (GameSaveSystem.HasSave())
             GameSaveSystem.Load(Inventory);
+        LoadRoster();
 
         SpawnPeople(population, soldiers);
     }
@@ -63,6 +80,85 @@ public class VillageSimulation : MonoBehaviour
             food = Mathf.Max(0, foodCost)
         };
         return Inventory.TrySpend(cost);
+    }
+
+    public bool SaveRoster()
+    {
+        try
+        {
+            Directory.CreateDirectory(Application.persistentDataPath);
+            RosterSaveData data = new RosterSaveData
+            {
+                version = RosterVersion,
+                population = Mathf.Clamp(population, 1, MaximumRosterCount),
+                soldiers = Mathf.Clamp(soldiers, 0, MaximumRosterCount)
+            };
+            File.WriteAllText(RosterTempPath, JsonUtility.ToJson(data));
+            if (File.Exists(RosterPath))
+                File.Copy(RosterPath, RosterBackupPath, true);
+            if (File.Exists(RosterPath)) File.Delete(RosterPath);
+            File.Move(RosterTempPath, RosterPath);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning("Village roster save failed: " + exception.Message);
+            TryDeleteRosterTemp();
+            return false;
+        }
+    }
+
+    private void LoadRoster()
+    {
+        RosterSaveData data = ReadRosterFile(RosterPath);
+        if (data == null)
+        {
+            data = ReadRosterFile(RosterBackupPath);
+            if (data != null)
+            {
+                try { File.Copy(RosterBackupPath, RosterPath, true); }
+                catch (Exception exception) { Debug.LogWarning("Roster backup restore failed: " + exception.Message); }
+            }
+        }
+
+        if (data == null) return;
+        population = Mathf.Clamp(data.population, 1, MaximumRosterCount);
+        soldiers = Mathf.Clamp(data.soldiers, 0, MaximumRosterCount);
+    }
+
+    private RosterSaveData ReadRosterFile(string path)
+    {
+        try
+        {
+            if (!File.Exists(path)) return null;
+            RosterSaveData data = JsonUtility.FromJson<RosterSaveData>(File.ReadAllText(path));
+            if (data == null || data.version != RosterVersion ||
+                data.population < 1 || data.population > MaximumRosterCount ||
+                data.soldiers < 0 || data.soldiers > MaximumRosterCount)
+                return null;
+            return data;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning("Village roster load failed: " + exception.Message);
+            return null;
+        }
+    }
+
+    private void TryDeleteRosterTemp()
+    {
+        try { if (File.Exists(RosterTempPath)) File.Delete(RosterTempPath); }
+        catch { }
+    }
+
+    private void OnApplicationPause(bool paused)
+    {
+        if (paused) SaveRoster();
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveRoster();
     }
 
     private void SpawnPeople(int citizenCount, int soldierCount)
@@ -109,6 +205,7 @@ public class VillageSimulation : MonoBehaviour
             if (coordinator != null) coordinator.SaveAll();
             else if (GameSaveSystem.Save(Inventory))
                 Debug.Log("منابع بازی ذخیره شد.");
+            SaveRoster();
         }
         if (GUI.Button(new Rect(158, 288, 132, 32), "بارگذاری بازی"))
         {
