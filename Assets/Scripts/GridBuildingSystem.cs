@@ -106,6 +106,10 @@ public class GridBuildingSystem : MonoBehaviour
 
         if (progression != null)
             progression.AwardExperience(20 + definition.Id * 3);
+
+        // Persist immediately so a force-closed mobile app does not lose a new structure.
+        if (!BuildingWorldSaveSystem.Save(out string saveError) && !string.IsNullOrEmpty(saveError))
+            Debug.LogWarning("Placed building could not be saved: " + saveError);
     }
 
     private void OnGUI()
