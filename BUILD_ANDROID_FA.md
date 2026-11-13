@@ -15,7 +15,7 @@ GitHub Actions باید به مجوز معتبر Unity دسترسی داشته �
 
 پس از افزودن Secret:
 1. به زبانه Actions مخزن بروید.
-2. Workflow با نام **Build Unity Android APK** را انتخاب کنید.
+2. Workflow با نام **Build Unity Android APK** را انتخاب کنید (ساخت به‌صورت دستی اجرا می‌شود تا هر تغییر کد بدون مجوز، اجرای ناموفق نسازد).
 3. گزینه **Run workflow** را روی شاخه `feature/gameplay-foundation` اجرا کنید.
 4. فقط پس از موفقیت کامل، Artifact با نام `Afghanistan-Old-Unity-Android-APK` قابل دریافت است.
 
