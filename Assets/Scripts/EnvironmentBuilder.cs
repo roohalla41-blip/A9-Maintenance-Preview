@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Procedural first-pass 3D environment for the Afghanistan Old prototype.
@@ -5,6 +6,7 @@ using UnityEngine;
 public class EnvironmentBuilder : MonoBehaviour
 {
     private Transform root;
+    private readonly Dictionary<int, Material> materialCache = new Dictionary<int, Material>();
 
     public void Build(int size, Material groundMat, Material waterMat)
     {
@@ -238,6 +240,8 @@ public class EnvironmentBuilder : MonoBehaviour
         obj.transform.localPosition = position;
         obj.transform.localScale = scale;
         ApplyMaterial(obj, material, color);
+        Collider decorativeCollider = obj.GetComponent<Collider>();
+        if (decorativeCollider != null) Destroy(decorativeCollider);
         return obj;
     }
 
@@ -249,6 +253,8 @@ public class EnvironmentBuilder : MonoBehaviour
         obj.transform.localPosition = position;
         obj.transform.localScale = scale;
         ApplyMaterial(obj, null, color);
+        Collider decorativeCollider = obj.GetComponent<Collider>();
+        if (decorativeCollider != null) Destroy(decorativeCollider);
         return obj;
     }
 
@@ -261,6 +267,10 @@ public class EnvironmentBuilder : MonoBehaviour
 
     private Material MakeMaterial(Color color)
     {
+        int key = color.GetHashCode();
+        if (materialCache.TryGetValue(key, out Material cached) && cached != null)
+            return cached;
+
         Shader shader = Shader.Find("Universal Render Pipeline/Lit");
         if (shader == null) shader = Shader.Find("Standard");
         if (shader == null) shader = Shader.Find("Unlit/Color");
@@ -269,6 +279,6 @@ public class EnvironmentBuilder : MonoBehaviour
             material.SetColor("_BaseColor", color);
         if (material.HasProperty("_Color"))
             material.SetColor("_Color", color);
+        materialCache[key] = material;
         return material;
-    }
 }
