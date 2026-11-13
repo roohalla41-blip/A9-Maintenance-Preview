@@ -19,8 +19,9 @@ public sealed class LocalSaveCoordinator : MonoBehaviour
         // VillageSimulation owns the initial resource restore. This coordinator
         // starts after scene initialization and only handles subsequent saves.
         ResolveSystems();
-        if (!BuildingWorldSaveSystem.Load(out string loadError) && !string.IsNullOrEmpty(loadError))
-            Debug.LogWarning("Building save could not be restored: " + loadError);
+        // PrototypeBootstrap restores the building world before VillageSimulation
+        // spawns units. Do not reload it here: doing so would recreate placed
+        // buildings after guards have already derived their combat statistics.
         initialized = true;
     }
 
