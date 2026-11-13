@@ -187,20 +187,20 @@ public class VillageSimulation : MonoBehaviour
         if (Inventory == null) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
 
-        GUI.Box(new Rect(12, 132, 300, 112),
+        GUI.Box(new Rect(12, 190, 300, 112),
             "منابع دهکده" +
             "\nچوب: " + wood + "   سنگ: " + stone + "   غذا: " + food +
             "\nجمعیت: " + population + "   نگهبانان: " + soldiers +
             "\nتولید خودکار: هر " + productionInterval.ToString("0") + " ثانیه");
 
-        if (GUI.Button(new Rect(18, 250, 90, 34), "جمع‌آوری چوب +10"))
+        if (GUI.Button(new Rect(18, 308, 90, 34), "جمع‌آوری چوب +10"))
             Inventory.Add(ResourceType.Wood, 10);
-        if (GUI.Button(new Rect(114, 250, 90, 34), "جمع‌آوری سنگ +10"))
+        if (GUI.Button(new Rect(114, 308, 90, 34), "جمع‌آوری سنگ +10"))
             Inventory.Add(ResourceType.Stone, 10);
-        if (GUI.Button(new Rect(210, 250, 90, 34), "برداشت غذا +10"))
+        if (GUI.Button(new Rect(210, 308, 90, 34), "برداشت غذا +10"))
             Inventory.Add(ResourceType.Food, 10);
 
-        if (GUI.Button(new Rect(18, 288, 132, 32), "ذخیره بازی"))
+        if (GUI.Button(new Rect(18, 346, 132, 32), "ذخیره بازی"))
         {
             LocalSaveCoordinator coordinator = FindObjectOfType<LocalSaveCoordinator>();
             if (coordinator != null) coordinator.SaveAll();
@@ -208,7 +208,7 @@ public class VillageSimulation : MonoBehaviour
                 Debug.Log("منابع بازی ذخیره شد.");
             SaveRoster();
         }
-        if (GUI.Button(new Rect(158, 288, 132, 32), "بارگذاری بازی"))
+        if (GUI.Button(new Rect(158, 346, 132, 32), "بارگذاری بازی"))
         {
             if (!GameSaveSystem.Load(Inventory))
                 Debug.LogWarning("ذخیره معتبری برای بارگذاری پیدا نشد.");
