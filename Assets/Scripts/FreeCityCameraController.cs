@@ -102,6 +102,7 @@ public sealed class FreeCityCameraController : MonoBehaviour
 
         if (Input.touchCount >= 2)
         {
+            singleTouchStartedOverHud = true;
             Touch a = Input.GetTouch(0);
             Touch b = Input.GetTouch(1);
             if (MobileUiLayout.IsHudPosition(a.position) ||
