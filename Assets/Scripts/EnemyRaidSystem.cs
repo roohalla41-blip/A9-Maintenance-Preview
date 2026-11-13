@@ -173,10 +173,29 @@ public class VillageGuard : MonoBehaviour
 public class Raider : MonoBehaviour
 {
     private static readonly List<Raider> active = new List<Raider>();
-    public static int ActiveCount { get { return active.Count; } }
+
+    public static int ActiveCount
+    {
+        get
+        {
+            PruneInactiveEntries();
+            return active.Count;
+        }
+    }
+
     public static Raider GetActive(int index)
     {
+        PruneInactiveEntries();
         return index >= 0 && index < active.Count ? active[index] : null;
+    }
+
+    private static void PruneInactiveEntries()
+    {
+        for (int i = active.Count - 1; i >= 0; i--)
+        {
+            if (active[i] == null)
+                active.RemoveAt(i);
+        }
     }
 
     public Vector3 target;
