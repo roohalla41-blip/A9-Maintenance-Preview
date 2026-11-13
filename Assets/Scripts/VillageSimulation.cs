@@ -105,8 +105,10 @@ public class VillageSimulation : MonoBehaviour
 
         if (GUI.Button(new Rect(18, 288, 132, 32), "ذخیره بازی"))
         {
-            if (GameSaveSystem.Save(Inventory))
-                Debug.Log("بازی افغانستان قدیم ذخیره شد.");
+            LocalSaveCoordinator coordinator = FindObjectOfType<LocalSaveCoordinator>();
+            if (coordinator != null) coordinator.SaveAll();
+            else if (GameSaveSystem.Save(Inventory))
+                Debug.Log("منابع بازی ذخیره شد.");
         }
         if (GUI.Button(new Rect(158, 288, 132, 32), "بارگذاری بازی"))
         {
