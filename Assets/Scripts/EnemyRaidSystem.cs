@@ -146,6 +146,7 @@ public class EnemyRaidSystem : MonoBehaviour
 
     private void OnGUI()
     {
+        if (TechnologyResearchPanel.IsOpen) return;
         GridBuildingSystem builder = GetComponent<GridBuildingSystem>();
         if (builder != null && builder.IsBuildMode) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
