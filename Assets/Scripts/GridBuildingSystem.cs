@@ -57,6 +57,8 @@ public class GridBuildingSystem : MonoBehaviour
         BuildingDefinition definition = BuildingCatalog.Get(selectedBuilding);
         VillageSimulation economy = VillageSimulation.Instance;
         if (definition == null || economy == null || economy.Inventory == null) return;
+        EmpireProgressionSystem progression = EmpireProgressionSystem.Instance;
+        if (progression != null && !progression.IsBuildingUnlocked(definition.Id)) return;
         if (!economy.Inventory.HasEnough(definition.Cost)) return;
 
         Ray ray = mainCamera.ScreenPointToRay(screenPosition);
@@ -98,8 +100,11 @@ public class GridBuildingSystem : MonoBehaviour
         BuildingInstance instance = building.AddComponent<BuildingInstance>();
         instance.Initialize(definition);
 
-        if (definition.Id == 4)
+        if (definition.Id == 4 || definition.Id == 6)
             building.AddComponent<WatchtowerDefense>();
+
+        if (progression != null)
+            progression.AwardExperience(20 + definition.Id * 3);
     }
 
     private void OnGUI()
