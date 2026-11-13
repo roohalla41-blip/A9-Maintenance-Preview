@@ -35,6 +35,42 @@ button:active{transform:translateY(1px) scale(.97);filter:brightness(1.22);backg
 #help{background:#101d1bd9;border:1px solid #e7c77c55;color:#e8dfc8}
 @media(max-width:420px){.resources{gap:6px;padding:8px}.resources span{gap:2px;font-size:10px}.resources b{font-size:11px}.res-icon{width:14px;height:14px}.brand{font-size:13px;padding:9px 10px}#right button{min-width:98px;padding:9px;font-size:11px}}
 
+
+/* Phone-first layout pass: respect cutouts, short screens and thumb scrolling. */
+html,body{height:100%;height:100dvh}
+#top{padding: max(7px,env(safe-area-inset-top)) 8px 7px;align-items:center;gap:6px}
+.brand{max-width:38vw;min-width:0;overflow:hidden}
+.brand small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.resources{max-width:60vw;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px}
+.resources span{min-width:0;white-space:nowrap}
+#right{right:7px;top:clamp(88px,15vh,132px);gap:6px;max-width:31vw}
+#right button{min-width:0;max-width:100%;padding:8px 9px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bottom{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:7px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom));gap:7px}
+#bottom::-webkit-scrollbar{display:none}
+#bottom button{flex:0 0 auto;min-width:72px;padding:9px 10px;font-size:11px}
+#buildPanel{left:8px;right:8px;bottom:calc(58px + env(safe-area-inset-bottom));max-height:min(38dvh,290px);overflow-y:auto;overscroll-behavior:contain}
+#message{top:calc(62px + env(safe-area-inset-top));max-width:calc(100vw - 24px);white-space:normal;text-align:center;line-height:1.5}
+#help{bottom:calc(59px + env(safe-area-inset-bottom));max-width:52vw;line-height:1.45}
+@media(max-width:360px){
+ .brand{max-width:34vw;font-size:11px;padding:8px}
+ .brand small{font-size:8px}
+ .resources{max-width:64vw;padding:6px;gap:3px 5px}
+ .resources span{font-size:9px}
+ .resources b{font-size:10px}
+ #right{max-width:29vw}
+ #right button{font-size:9px;padding:7px 6px}
+ #bottom button{min-width:66px;padding:8px;font-size:10px}
+}
+@media(orientation:landscape) and (max-height:500px){
+ #top{padding-top:max(4px,env(safe-area-inset-top))}
+ #right{top:64px;gap:4px}
+ #right button{padding:5px 7px}
+ #bottom{padding-top:4px;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+ #bottom button{padding:6px 8px}
+ #buildPanel{bottom:calc(48px + env(safe-area-inset-bottom));max-height:45dvh}
+ #help{display:none}
+}
+
 </style><style id="phone-layout">
 #top{padding:calc(env(safe-area-inset-top,0px) + 7px) 7px 0;gap:5px}
 .brand{max-width:39vw;font-size:clamp(11px,3vw,15px);padding:8px}
