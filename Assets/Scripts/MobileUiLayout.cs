@@ -45,7 +45,7 @@ public static class MobileUiLayout
         // Keep camera gestures away from all fixed gameplay panels and controls.
         return guiY < 185f ||
                (guiY >= 180f && guiY < 390f) ||
-               (guiY >= 390f && guiY < 590f) ||
+               (guiY >= 390f && guiY < 640f) ||
                guiY >= logicalHeight - 140f;
     }
 }
