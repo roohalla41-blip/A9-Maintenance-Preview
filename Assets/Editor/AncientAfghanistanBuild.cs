@@ -22,7 +22,11 @@ public static class AncientAfghanistanBuild
         PlayerSettings.applicationIdentifier = "com.ancientafghanistan.game";
         PlayerSettings.bundleVersion = "0.1.0";
         PlayerSettings.Android.bundleVersionCode = 1;
-        PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
+        PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+        PlayerSettings.allowedAutorotateToPortrait = true;
+        PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+        PlayerSettings.allowedAutorotateToLandscapeLeft = false;
+        PlayerSettings.allowedAutorotateToLandscapeRight = false;
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
         PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
