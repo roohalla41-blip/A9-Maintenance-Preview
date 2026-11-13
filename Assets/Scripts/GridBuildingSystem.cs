@@ -64,6 +64,7 @@ public class GridBuildingSystem : MonoBehaviour
         point.x = Mathf.Round(point.x / gridSize) * gridSize;
         point.z = Mathf.Round(point.z / gridSize) * gridSize;
         if (new Vector2(point.x, point.z).magnitude > buildRadius) return;
+        point.y = GetTerrainHeight(point.x, point.z);
 
         Vector3 halfExtents = new Vector3(
             definition.Footprint.x * .46f,
@@ -112,6 +113,13 @@ public class GridBuildingSystem : MonoBehaviour
             if (!BuildingWorldSaveSystem.Save(out string saveError) && !string.IsNullOrEmpty(saveError))
                 Debug.LogWarning("Placed building could not be saved: " + saveError);
         }
+    }
+
+    private static float GetTerrainHeight(float x, float z)
+    {
+        float hills = Mathf.Sin(x * .19f) * .22f + Mathf.Cos(z * .16f) * .18f;
+        float ridge = Mathf.PerlinNoise((x + 80f) * .075f, (z + 80f) * .075f) * .8f;
+        return hills + ridge - .25f;
     }
 
     private void OnGUI()
