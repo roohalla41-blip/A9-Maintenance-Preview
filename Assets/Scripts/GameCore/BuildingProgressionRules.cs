@@ -74,6 +74,24 @@ public static class BuildingProgressionRules
         return null;
     }
 
+    public static string GetNextLevelBenefit(int buildingId, int nextLevel)
+    {
+        switch (buildingId)
+        {
+            case 3: return "سربازخانه: ظرفیت و توان آموزش نیروهای زمینی افزایش می‌یابد.";
+            case 4: return "برج نگهبانی: برد دیده‌بانی و قدرت دفاع بیشتر می‌شود.";
+            case 5: return "دیوار: استحکام و مقاومت خط دفاعی افزایش می‌یابد.";
+            case 6: return "برج توپخانه: قدرت و برد سلاح‌های سنگین افزایش می‌یابد.";
+            case 8: return "آکادمی: پژوهش‌ها و فناوری‌های پیشرفته‌تر آزاد می‌شوند.";
+            case 9: return "کارگاه محاصره: تجهیزات سنگین و ماشین‌های جنگی آزاد می‌شوند.";
+            case 11: return nextLevel >= 3
+                ? "زرادخانه: مسیر آزادسازی خودروهای زرهی و سلاح‌های پیشرفته‌تر."
+                : "زرادخانه: تجهیزات و توان رزمی ارتش افزایش می‌یابد.";
+            case 10: return "ارگ مرکزی: ظرفیت و مراحل پیشرفت امپراتوری گسترش می‌یابد.";
+            default: return "ساختمان مقاوم‌تر می‌شود و کارایی آن افزایش می‌یابد.";
+        }
+    }
+
     public static int GetArmyTier(int capitalLevel)
     {
         if (capitalLevel >= 21 && HasBuilding(11, 3) && HasBuilding(9, 2)) return 4;
