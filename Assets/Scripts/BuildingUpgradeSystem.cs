@@ -12,6 +12,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
 
     private void Update()
     {
+        if (TechnologyResearchPanel.IsOpen) return;
         GridBuildingSystem builder = GetComponent<GridBuildingSystem>();
         if (builder != null && builder.IsBuildMode) return;
 
@@ -53,7 +54,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
 
     private void OnGUI()
     {
-        if (selected == null) return;
+        if (TechnologyResearchPanel.IsOpen || selected == null) return;
         Matrix4x4 previousMatrix = MobileUiLayout.Begin();
 
         float y = (Screen.height / MobileUiLayout.Scale) - 116f;
