@@ -99,6 +99,7 @@ public class GridBuildingSystem : MonoBehaviour
 
         BuildingInstance instance = building.AddComponent<BuildingInstance>();
         instance.Initialize(definition);
+        instance.isPlayerPlaced = true;
 
         if (definition.Id == 4 || definition.Id == 6)
             building.AddComponent<WatchtowerDefense>();
